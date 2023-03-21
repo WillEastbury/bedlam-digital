@@ -45,9 +45,6 @@ public class Lobby
             thisWinner.WonRound(); 
         }
 
-        foreach(Player thisLoser in losers)
-
-        // Reset the votes for the round
         foreach (var player in Players)
         {
             player.VotesInCurrentRound = 0;
