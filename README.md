@@ -6,7 +6,7 @@ Bedlam is a comparison card game (in the style of Cards Against Humanity and App
 
 You can buy box sets of the original core game and any of the three (as of March 2021) expansion packs at http://www.bedlamgame.com/, or you can download the cards for free. 
 
-Or we are creating a digital version as promised to KC Lemson on a distant yammer thread, the idea is to be able to play this remotely as a team and have some fun during a virtual offsite !
+Or we are creating a digital version as promised to KC Lemson on a distant yammer? (now Viva Engage) thread, the idea is to be able to play this remotely as a team and have some fun during a virtual offsite !
 
 **How To Play (minimum 4 players)**
 1.	Join a Virtual Lobby 
