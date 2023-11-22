@@ -20,4 +20,4 @@ Or we are creating a digital version as promised to KC Lemson on a distant yamme
 
 P.S. pro tip: When you play Bedlam with coworkers, try not to get anyone fired! kthxbai
 
-*Massive* thanks go to the legendary KC Lemson for the original Bedlam card game which made this possible and also for open-sourcing all of the card designs.
+*Massive* thanks go to the legendary KC Lemson for the original Bedlam card game (@ https://github.com/kclemson/bedlam) which made this possible and also for open-sourcing all of the card designs.
