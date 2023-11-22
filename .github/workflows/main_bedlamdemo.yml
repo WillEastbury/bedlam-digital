@@ -51,7 +51,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'bedlamdemo'
+          app-name: 'bedlamonline'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CEB27CD0441E4A488811F0DFC49FD91B }}
           package: .
