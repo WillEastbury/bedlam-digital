@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bedlam Digital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <nav class="navbar navbar-light bg-light navbar-dark bg-dark static-top">
+                    <a class="navbar-brand" href="#"> Bedlam Digital </a> 
+                    <a class="badge badge-success" data-bind="text: GameState"> </a>
+                    <a class="badge badge-warning" data-bind="text: GameTurnState"> </a>
+                    <div class="input-group mb-3" data-bind="visible: GameState() == 'Not Started'">
+                        <span class="input-group-text" id="basic-addon1">Your Name</span>
+                        <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" data-bind="value: Name">
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div class="row" id="matchmaking" >
+            <!-- game UI to set your name and join a lobby goes here we render a list of lobbies hosted on the current server and you can click 'join' to join one.-->
+            <div class="col-md-12" data-bind="visible: Name().length > 0 && GameState() == 'Not Started'">
+                <!-- render a list of cards for each lobby, content of card should show current players and the lobby id-->
+                <!-- ko foreach: Lobbies -->
+                    <div class="card" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title" data-bind="text: lobbyName">Lobby</h5>
+                            <h6 class="card-subtitle mb-2 text-muted" data-bind="text: ($root.MaxPlayersInLobby() - players.length) + ' Seats Left'"></h6>
+                            <!-- ko foreach: players -->
+                                <p class="card-text"> <span data-bind="text: $data">Will</span>
+                                    <span data-bind="visible: $data == $parent.Judge">
+                                        <i class="fas fa-crown"></i> Judge 
+                                    </span>
+
+                                    <span data-bind="visible: $data == $root.Name()">
+                                        <i class="fas fa-thumbs-up"></i> You 
+                                    </span>
+                                </p>
+                            <!-- /ko -->
+                            <button class="button btn-info" href="#" data-bind="click: $root.JoinLobby, visible: players.length < $root.MaxPlayersInLobby() && $root.GameId().length == 0">Join this game</button>
+                        </div>
+                    </div>
+                <!-- /ko -->
+            </div>
+        </div>
+        <div class="row" id="maingame" data-bind="visible: GameState() == 'Playing' && GameTurnState() != 'Voting' && PlayedThisRound() == true">
+           <div class="col-md-9">
+               Playing - Waiting for other players to play. 
+               <img width="20%" data-bind="attr: { src: '/cards/' +  CurrentBlackCard() }" />
+                <!-- ko foreach: JudgesWhiteCards -->
+                    <img width="15%" data-bind="click: $root.VoteCard, attr: { src: '/cards/' + Card }" />
+                <!-- /ko -->
+           </div>
+        </div>
+        <div class="row" id="maingame" data-bind="visible: GameState() == 'Voting' && GameTurnState() == 'Voting' && VotedThisRound() == true">
+            <div class="col-md-9">
+                Voting - Waiting for other players to vote too. 
+                <img width="20%" data-bind="attr: { src: '/cards/' +  CurrentBlackCard() }" />
+                <!-- ko foreach: YourCurrentWhiteCards -->
+                    <img width="20%" data-bind="attr: { src: '/cards/' + $data }" /></a>
+                <!-- /ko -->
+            </div>
+         </div>
+        <div class="row" id="maingame" data-bind="visible: GameState() == 'Playing' && GameTurnState() != 'Voting' && PlayedThisRound() == false">
+             <!-- this is where the main gameplay shows up once you have joined a lobby -->
+            <div class="col-md-9">
+                Playing ... Choose a card! 
+                <img width="20%" data-bind="attr: { src: '/cards/' +  CurrentBlackCard() }" />
+                <!-- ko foreach: YourCurrentWhiteCards -->
+                    <a data-bind="click: $root.PlayCard"><img width="20%" data-bind="attr: { src: '/cards/' + $data }" /></a>
+                <!-- /ko -->
+            </div>
+            <div class="col-md-3">
+                <table class="table table-striped table-dark">
+                    <thead>
+                        <tr>
+                            <th scope="col">Player</th>
+                            <th scope="col">Score</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: Players">
+                        <tr>
+                            <td data-bind="text: Name"></td>
+                            <td data-bind="text: Score"></td>
+                            <td>
+                                <span data-bind="visible: Name() == $root.Judge()">
+                                    <i class="fas fa-crown"></i> Judge 
+                                </span>
+                                <span data-bind="visible: Name() == $root.Name()">
+                                    <i class="fas fa-thumbs-up"></i> You 
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row" data-bind=" visible: GameState() == 'Playing' && GameTurnState() == 'Voting' && VotedThisRound() == false">
+            <div class="col-md-12">
+                Voting ... Choose a card! 
+                <img width="20%" data-bind="attr: { src: '/cards/' +  CurrentBlackCard() }" />
+                <!-- ko foreach: JudgesWhiteCards -->
+                    <img width="15%" data-bind="click: $root.VoteCard, attr: { src: '/cards/' + Card }" />
+                 <!-- /ko -->
+             </div>
+        </div> 
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js" integrity="sha512-2AL/VEauKkZqQU9BHgnv48OhXcJPx9vdzxN1JrKDVc4FPU/MEE/BZ6d9l0mP7VmvLsjtYwqiYQpDskK9dG8KBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        var ViewModel = {
+            GameState: ko.observable("Not Started"),
+            GameTurnState: ko.observable('Playing'),
+            Name : ko.observable(''),
+            LobbyName : ko.observable(''),
+            Lobbies : ko.observableArray([]),
+            // Currently Joined Lobby / Game
+            GameId : ko.observable(''), 
+            playerGuidToken : ko.observable(''),
+            PlayedRounds : ko.observable(0),
+            ScoreBoard : ko.observableArray([]), 
+            Players : ko.observableArray([]),
+            Judge : ko.observable(''), 
+            Score : ko.observable(0),
+            CurrentNumberOfPlayers : ko.observable(0),
+            MaxPlayersInLobby : ko.observable(10),
+            CurrentBlackCard : ko.observable(), 
+            YourCurrentWhiteCards : ko.observableArray([]), 
+            JudgesWhiteCards : ko.observableArray([]), 
+            VotedThisRound : ko.observable(''),
+            PlayedThisRound : ko.observable(''),
+            JoinLobby : function (joinwhat){
+                CallApi("JoinLobby", ViewModel, joinwhat.lobbyId);
+            },
+            PlayCard : function (whichcard){
+                if(ViewModel.GameTurnState() == 'Playing')
+                {
+                    CallApi("PlayWhiteCard", ViewModel, whichcard);
+                    // ViewModel.GameTurnState("Voting");
+                    console.log("Played " + whichcard);
+                    ViewModel.PlayedThisRound(true);
+                }
+                else
+                {
+                    console.log("Skipped Playing " + whichcard);
+                }
+            },
+            VoteCard : function (whichcard){
+                if(ViewModel.GameTurnState() == 'Voting')
+                {
+                    console.log("Voted " + whichcard.Player + ' ' + whichcard.Card);
+                    CallApi("VoteOnWinner", ViewModel, whichcard);
+                    // ViewModel.GameTurnState('Playing');
+                    ViewModel.VotedThisRound(true);
+                }
+                else
+                {
+                    console.log("Skipped Voting " + whichcard);
+                }
+            }
+        };
+        ko.applyBindings(ViewModel);
+
+        var interval = setInterval(
+            processingLoop, 
+            1250,
+            ViewModel
+        );
+        function processingLoop(vm)
+        {
+            //console.log("...loop exec");
+            switch(vm.GameState())
+            {
+                case "Not Started" :
+
+                    // Waiting to join a lobby, poll the lobby list
+                    CallApi("GetLobbies", ViewModel);
+                    break;
+
+                case "Playing" : 
+
+                    // Game is in progress, keep checking the game state
+                    CallApi("GetLobbyData", ViewModel);
+                    break;
+
+                case "Complete" : 
+
+                    // Game is finished
+                    break;
+            }
+        }
+
+        async function CallApi(apitocall, vm, param1)
+        {
+            // ALL API CALLS ARE GETS ONLY with querystring encoded parameters
+            switch(apitocall)
+            {
+                case "GetLobbies":
+
+                    // first api gets existing lobbies
+                    // api/Lobby/GetLobbies
+                    // returns a LobbyList (safe list of lobbies and players to render)
+                    fetch(`api/Lobby/GetLobbies`)
+                        .then((response) => response.json())
+                        .then((data) => {
+                            vm.Lobbies.removeAll(); 
+                            data.forEach((lob) => {
+                                // map this lobby and wrap in observables
+                                // lob is some lobby data
+                                vm.Lobbies.push(ko.observable(lob));
+                            });
+                        });
+                    break;
+
+                case "StartLobby":
+
+                    // creates a new lobby and joins you 
+                    // GET api/Lobby/StartNewLobby/{PlayerName}
+                    // returns a player object with an extra playerGuidToken for security that represents you 
+
+                    // sample {
+                    //  "playerGuidToken":"2aa6d53e-7778-4077-aca2-5dc4b94f859c",
+                    //  "name":"Will",
+                    //  "score":0,
+                    //  "whiteCardsHeldInHand":[
+                    //     "C:\\SourcePersonal\\New folder\\bedlam-digital\\web\\cards\\MSFT-SP2-White-47 copy 2.png"
+                    // ]}
+                    fetch("api/Lobby/StartNewLobby/" + vm.Name)
+                        .then((response) => response.text)
+                        .then((data) => {
+                            console.log("Started Lobby " + data.playerGuidToken);
+                            // map the components #
+                            // capture the guid token and your white cards
+                            vm.playerGuidToken(data.playerGuidToken);
+                            vm.GameId(playingInGame);
+
+                            vm.YourCurrentWhiteCards.removeAll();
+                            data.whiteCardsHeldInHand.forEach((card) => {
+                                // add it to the vm array
+                                vm.YourCurrentWhiteCards.push(ko.observable(card));
+                            });
+                            vm.Name(data.name);
+                            vm.Score(data.score);
+                            vm.GameState("Playing");
+                        }
+                    );
+                    break;
+                
+                case "JoinLobby": 
+                    // joins player to a lobby
+                    // api/Lobby/JoinExistingLobby/{GameId}/{PlayerName}
+                    // returns a player object with an extra playerGuidToken for security that represents you AND playingInGame for the currently joined game ID
+                    
+                    fetch(`api/Lobby/JoinExistingLobby/${param1}/${vm.Name()}/`)
+                        .then((response) => {
+                            if (!response.ok) 
+                            {
+                                console.log(response.status);
+                                throw new Error(response.status);
+                            }
+                            return response;
+                        })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            
+                            vm.playerGuidToken(data.playerGuidToken);
+                            vm.Name(data.name)
+                            vm.GameId(param1);
+                            vm.Score(data.score);
+
+                            vm.YourCurrentWhiteCards.removeAll();
+                            data.whiteCardsHeldInHand.forEach((card) => {
+                                // add it to the vm array
+                                vm.YourCurrentWhiteCards.push(card);
+                            });
+
+                            vm.GameState("Playing");
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        })
+                    break;
+                
+                case "GetLobbyData":
+
+                    // /api/Lobby/GetLobbyData/{GameId}
+                    // returns single Lobby Object with safety
+                    fetch(`api/Lobby/GetLobbyData/${vm.GameId()}/`)
+                        .then((response) => response.json())
+                        .then((data) => {
+
+                            console.log(data);
+
+                            vm.Judge(data.judge);
+                            vm.GameId(data.gameId);
+                            vm.PlayedRounds(data.playedRounds);
+                            vm.MaxPlayersInLobby(data.maxPlayers);
+                            vm.CurrentNumberOfPlayers(data.numberOfPlayers);     
+                            vm.CurrentBlackCard(data.currentBlackCard);
+                            vm.LobbyName(data.lobbyName);
+                            vm.JudgesWhiteCards.removeAll();
+                            // data.currentWhiteCardStackFromPlayers.entries().forEach((card) => {
+                            for (const [key, value] of Object.entries(data.currentWhiteCardStackFromPlayers)) {
+                                console.log({"Player": key, "Card": value});
+                                vm.JudgesWhiteCards.push({"Player": key, "Card": value});
+                            }
+
+                            vm.Players.removeAll(); 
+                            data.players.forEach((player) => {
+                                vm.Players.push(
+                                    {
+                                        "Name": ko.observable(player.name), 
+                                        "Score": ko.observable(player.score)
+                                    }
+                                );
+                                if(player.Name == vm.Name())
+                                {
+                                    vm.Score = player.score;
+                                }
+                            }); 
+                        });
+                    
+                    break;
+                
+                case "PlayWhiteCard":
+
+                    // api/Game/PlayWhiteCard/{GameId}/{PlayerName}/{CardId}
+                    // returns OK
+                    fetch(`api/Game/PlayWhiteCard/${vm.GameId()}/${vm.Name()}/${param1}`)
+                        .then((response) => response.text)
+                        .then((data) => {
+                            vm.YourCurrentWhiteCards.remove(param1);
+                            vm.GameState("Playing");
+                        }
+                    );
+                    
+                    break;
+                
+                case "VoteOnWinner":
+
+                    // api/Game/VoteOnWinner/{GameId}/{WinningPlayer}
+                    // returns OK
+
+                    break;
+                
+            }
+        }
+
+        function handleErrors(response) {
+            if (!response.ok) throw new Error(response.status);
+            return response;
+        }
+    </script>
+</body>
+</html>
