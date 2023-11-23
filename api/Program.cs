@@ -4,7 +4,51 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 var players = new List<Player>();
 var lobbies = new List<Lobby>();
-var names = new List<string>() {"Janus (Windows 3.1 and MSDOS 5)", "Anaheim (Microsoft Edge)", "Astro (MS DOS 6)", "Bandit (Schedule Plus)", "Sparta (Windows for Workgroups 3.1)", "Snowball (Windows for Workgroups 3.11)", "Chicago (Windows 95)", "Memphis (Windows 98)", "Millennium (Windows ME)", "Razzle (Windows NT 3.1)", "Daytona (Windows NT 3.5)", "Tukwila (Windows NT 4)", "Cairo", "[] (Windows 2000)", "Whistler (Windows XP)", "Longhorn (Windows Vista)", "Vienna (Windows 7)", "Midori (Application Shim for Singularity, used in SQLPAL)", "Blue (Windows 8.1)", "Threshold (Windows 10)", "Redstone (Windows 10 Creators Update)", "Sun Valley (Windows 11)", "Hudson Valley (Windows 12?)", "Pegasus (Windows CE 1.0)", "Rapier (Windows Pocket PC 2000)", "Maldives (Windows Phone 7)", "Red Dog (Azure)", "Singularity (MSR Managed OS)", "Denali (SQL Server 2012)", "Thunder (Visual Basic 1.0)", "Bullet (MS Mail 3.0)", "Opus (Word for Windows v1.0)", "Wren (Outlook)", "Utopia (Bob UI)", "Marvel (MSN)", "Argo (Zune Player)", "KittyHawk (Visual Studio Lightswitch)", "DirectX Box (Xbox)", "Natal (Kinect)", "Natick (Underwater DC Pod)", "Roslyn (.net compiler platform)", "Aspen (Visual Studio 6.0)", "Rainier (Visual Studio.NET 2002)", "Whidbey (Visual Studio 2005)" };
+var names = new List<string>() {
+    
+    "Janus (Windows 3.1 and MSDOS 5)", 
+    "Anaheim (Microsoft Edge)", 
+    "Astro (MS DOS 6)", 
+    "Bandit (Schedule Plus)", 
+    "Sparta (Windows for Workgroups 3.1)", 
+    "Snowball (Windows for Workgroups 3.11)", 
+    "Chicago (Windows 95)", 
+    "Memphis (Windows 98)", 
+    "Millennium (Windows ME)", 
+    "Razzle (Windows NT 3.1)", 
+    "Daytona (Windows NT 3.5)", 
+    "Tukwila (Windows NT 4)", 
+    "Whistler (Windows XP)", 
+    "Longhorn (Windows Vista)", 
+    "Vienna (Windows 7)", 
+    "Midori (Application PAL for Singularity)", 
+    "Blue (Windows 8.1)", 
+    "Threshold (Windows 10)", 
+    "Redstone (Windows 10 Creators Update)", 
+    "Sun Valley (Windows 11)", 
+    "Hudson Valley (Windows 12?)", 
+    "Pegasus (Windows CE 1.0)", 
+    "Rapier (Windows Pocket PC 2000)",
+    "Maldives (Windows Phone 7)", 
+    "Red Dog (Azure)", 
+    "Singularity (MSR OS In Managed Code)", 
+    "Denali (SQL Server 2012)", 
+    "Thunder (Visual Basic 1.0)", 
+    "Bullet (MS Mail 3.0)", 
+    "Opus (Word for Windows v1.0)", 
+    "Wren (Outlook)", 
+    "Utopia (Bob)", 
+    "Marvel (MSN)", 
+    "Argo (Zune Player)", 
+    "KittyHawk (VS Lightswitch)", 
+    "DirectX Box (Xbox)", 
+    "Natal (Kinect)", 
+    "Natick (Underwater DC Pod)", 
+    "Roslyn (.net compiler platform)", 
+    "Aspen (Visual Studio 6.0)", 
+    "Rainier (Visual Studio .NET 2002)", 
+    "Whidbey (Visual Studio 2005)" 
+};
 var app = builder.Build();
 
 // Non-authenticated endpoints first
@@ -41,7 +85,7 @@ app.MapGet("/Card/{CardId}", (string CardId) =>
 app.MapGet("/Lobbies", () =>
 {
     Console.Write("L");
-    Lobby lobby = CreateAndAddNewLobbyIfNoSpace();
+    CreateAndAddNewLobbiesIfNoSpace();
     return Results.Ok(lobbies.Select(e => new LobbyDto(e)).ToList());
 });
 
@@ -52,7 +96,7 @@ app.MapGet("/Login/{lobbyId}/{playerName}", (string playerName, string lobbyId) 
     if (players.FirstOrDefault(p => p.Name == playerName) != null) return Results.Conflict("Player name already exists.");
     var player = new Player(playerName);
     players.Add(player);
-    Lobby lobby = CreateAndAddNewLobbyIfNoSpace();
+    Lobby lobby = CheckAndGetLobby(lobbyId);
     player.Cards = lobby.AnswerDeck.Take(Lobby.CardsDealtPerPlayer).ToList();
     foreach (var card in player.Cards) lobby.AnswerDeck.Remove(card);
     lobby.AddPlayer(player);
@@ -271,15 +315,42 @@ bool SetAuth(HttpContext context, string Claim = null, string Value = null)
     Console.WriteLine($"ERR: Claim {Claim} with value {Value} NOT found for user {playerIdClaim.Value}");
     return false;
 }
-Lobby CreateAndAddNewLobbyIfNoSpace()
-{   
-    Lobby lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers);
+void CreateAndAddNewLobbiesIfNoSpace()
+{
+    Lobby lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+    
     // If there are no lobbies available, create one 
     if (lobby == null)
     {
         lobby = new Lobby(GetRandomName());
         lobbies.Add(lobby);
+
+        lobby = new Lobby(GetRandomName());
+        lobbies.Add(lobby);
+
+        lobby = new Lobby(GetRandomName());
+        lobbies.Add(lobby);
+
         Console.WriteLine("Created new lobby: " + lobby.Id);
     }
+}
+Lobby CheckAndGetLobby(string lobbyId)
+{
+    // Join the player to their requested lobby if it's not started or full
+    Lobby lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+
+    if (lobby == null)
+    {
+        Console.WriteLine("WRN: Requested Lobby not found or full");
+        lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+
+        if (lobby == null)
+        {
+            Console.WriteLine("No free lobbies found, creating some more.");
+            CreateAndAddNewLobbiesIfNoSpace();
+            lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+        }
+    }
+
     return lobby;
 }
