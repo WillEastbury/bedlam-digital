@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bedlam</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <style>
         /* Add custom CSS styles here */
         .image-grid {
@@ -14,7 +13,6 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
         }
-
         .grid-image {
             width: 100%;
             height: 100%;
@@ -22,10 +20,9 @@
         }
     </style>
 </head>
-
 <body>
     <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-        <a class="navbar-brand" href="#">&nbsp Bedlam Online</a>
+        <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp Bedlam Online</a>
         <div id="navbarNav">
             <div id="navbarText">
                 <span class="navbar-text">Player:&nbsp </span><span data-bind="text: userName"
@@ -34,8 +31,8 @@
             <div id="navbarText">
                 <span class="navbar-text">In Lobby:&nbsp </span><span data-bind="text: myLobbyData.id"
                     class="navbar-text"></span> &nbsp
-                <div>
-                </div>
+            </div>
+        </div>
     </nav>
     <div class="container-fluid">
         <ul class="nav nav-tabs">
@@ -91,12 +88,12 @@
                         </div>
                         <div class="card-footer">
                             <strong>Players</strong>&nbsp (<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
-                            <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button>
+                            <!-- <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button> -->
                         </div>
                     </div>
                 </div>
-                <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound())">
-                    <h3>Playing Round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound() && !$root.amITheJudge())">
+                    <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
                     <div class="col-md-2">
                         <img class="img-fluid" data-bind="attr: {src: '/Card/' + $root.questionCard()}" />
                     </div>
@@ -106,8 +103,8 @@
                         </div>
                     <!-- /ko -->
                 </div>
-                <div class="row" id="judging" data-bind="visible: ($root.iHavePlayedThisRound())">
-                    <h3>Viewing Played Cards for Round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                <div class="row" id="judging" data-bind="visible: $root.amITheJudge">
+                    <h3>Judging round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
                     <div class="col-md-2">
                         <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
                     </div>
@@ -118,8 +115,17 @@
                     <!-- /ko -->
                     <div id="status"></div>
                 </div>
-                <div>
-                    <pre data-bind="text:ko.toJSON($root)"></pre>
+                <div class="row" id="viewing" data-bind="visible: ($root.iHavePlayedThisRound() && !$root.amITheJudge())">
+                    <h3>Viewing Played Cards for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                    <div class="col-md-2">
+                        <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
+                    </div>
+                    <!-- ko foreach: playedCards -->
+                        <div class="col-md-2">
+                            <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
+                        </div>
+                    <!-- /ko -->
+                    <div id="status"></div>
                 </div>
             </div>
         </div>
@@ -131,18 +137,6 @@
 
         var lvm = new GameViewModel(false);
 
-        // A little hiccup to slow anyone down trying to cheat the game (this is for FTA After all) by viewing and editing the local storage directly, and trying to cheat the auto-reload feature
-        const staticKeyPlane = "asdfdsa546jkh2g6hj2g6jh3g6hj5g64jh6gj546gh35g654jhg6hj5hivhguikhw7vtnhw84yitvrhcigo7yerchktjq34ght9asdhguvsahgu$^%$^sdfvlkjshfgiuaertgjhuvswoasdlk789jl345o8sdvASFSDFGFDHSDFHS54sdhdgfw544645hsdfdafhfgjkyjhbggflkawtgl][p;ls[dpsoifujhkl;hjgfmnoiubjhdfmkqlr;twpegrhoibufdjfhvsmk,le;   rpqtweogihbhdvjkiolp;bgnhjutlykrjwehwdaud9ofvdgpbhuohjlfafwe326rd";
-
-        // XOR with a key 
-        function xorWithKey(str, key) {
-            var res = '';
-            for (var i = 0; i < str.length; i++) {
-                res += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ str.charCodeAt(i));
-            }
-            return res;
-        }
-
         // Design a function to store the viewmodel state to HTML5 local storage
         function SaveViewModelLocal() {
 
@@ -151,52 +145,41 @@
 
         }
 
-        function LoadViewModelLocal() {
+        function ReloadOnCrash() {
 
-            if(lvm.cycling) {
+            // Load the viewmodel state from local storage
+            if (localStorage.getItem("lvm") != null) {
 
-                // Load the viewmodel state from local storage
-                if (localStorage.getItem("lvm") != null) {
+                setTimeout(function () {
 
-                    setTimeout(function () {
+                    console.log("Reloading State");
+                    var lvmObj = JSON.parse(atob(localStorage.getItem("lvm")));
 
-                        console.log("Reloading State");
-                        var lvmObj = JSON.parse(atob(localStorage.getItem("lvm")));
+                    lvm.userName(lvmObj.userName);
+                    lvm.token(lvmObj.token);
 
-                        lvm.userName(lvmObj.userName);
-                        lvm.token(lvmObj.token);
+                    // Map the props of my lobby data
+                    lvm.myLobbyData = ko.observable(new Lobby(
+                        lvmObj.myLobbyData.id, 
+                        lvmObj.myLobbyData.Players, 
+                        lvmObj.myLobbyData.playedCards, 
+                        lvmObj.myLobbyData.roundNumber,
+                        lvmObj.myLobbyData.judgeIndex
+                    ));
 
-                        // Map the props of my lobby data
-                        lvm.myLobbyData = ko.observable(new Lobby(
-                            lvmObj.myLobbyData.id, 
-                            lvmObj.myLobbyData.Players, 
-                            lvmObj.myLobbyData.playedCards, 
-                            lvmObj.myLobbyData.roundNumber,
-                            lvmObj.myLobbyData.judgeIndex
-                        ));
+                    lvm.questionCard(lvmObj.questionCard);
+                    lvm.answerCards([]);
 
-                        lvm.questionCard(lvmObj.questionCard);
-                        lvm.answerCards([]);
+                    lvmObj.answerCards.forEach(function (card) {
+                        lvm.answerCards.push(card);
+                    });
+                    lvm.lobbies([]);
 
-                        lvmObj.answerCards.forEach(function (card) {
-                            lvm.answerCards.push(card);
-                        });
-                        lvm.lobbies([]);
-
-                        lvmObj.lobbies.forEach(function (lobby) {
-                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex));
-                        });
-                        console.log("Loading Complete:", lvmObj);
-                    }, 2000);
-
-                }
-                else {
-                    lvm.loadLobbies();
-                }
-            }
-            else {
-                console.log("Not cycling, not loading from storage");
-                lvm.loadLobbies();
+                    lvmObj.lobbies.forEach(function (lobby) {
+                        lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex));
+                    });
+                    console.log("Loading Complete:", lvmObj);
+                }, 2000);
             }
         }
 
@@ -237,7 +220,7 @@
 
             self.amITheJudge = ko.computed(function () {
                 // If the JudgeIndex is the same as my player index then I am the judge
-                return self.myLobbyData().players().some(player => player.name === self.userName() && player.index === self.myLobbyData().judgeIndex());
+                return self.myLobbyData().players().findIndex(player => player.name === self.userName()) == self.myLobbyData().judgeIndex();
             });
 
             // Methods 
@@ -264,7 +247,17 @@
                     { method: 'GET', headers: {'Authorization': 'Bearer ' + token}})
                     .then(response => response.json())
                     .then(data => {
-                        self.myLobbyData(new Lobby(data.id, data.players, data.playedCards, data.roundNumber, data.judgeIndex));
+
+                        // If the round number just changed then the judge just voted and we need to clear the played cards
+                        if (self.myLobbyData().roundNumber() != data.roundNumber) {
+                           self.myLobbyData().players([]);
+                        }
+
+                        self.myLobbyData().id(data.id);
+                        self.myLobbyData().players(data.players);
+                        self.myLobbyData().playedCards(data.playedCards);
+                        self.myLobbyData().roundNumber(data.roundNumber);
+                        self.myLobbyData().judgeIndex(data.judgeIndex);
                     })
                     .catch(error => console.error('Error:', error));
                 SaveViewModelLocal();
@@ -299,6 +292,7 @@
                             alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
                         }
                         else {
+                            console.log("Setting Q+A Cards Received");
                             self.questionCard(data.questionCard);
                             self.answerCards([]);
                             data.answerCards.forEach(function (card) {
@@ -307,23 +301,23 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                    }
-                    );
+                            console.error('Error:', error);
+                    });
                 SaveViewModelLocal();
+                return true;
             };
 
             // POST /Lobbies/Play/{CardId} => Plays a card for a player into a lobby, returns a success message or error message
             self.playCard = function (card) {
+                console.log("Playing Card " + card);
                 fetch(`/Lobbies/Play/${card}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token() } })
                     .then(response => response.text())
                     .then(data => {
-                        // self.answerCards.remove(card);
-                        console.log(data);
-                        
+                        console.log('Response' + data);
                     })
                     .catch(error => console.error('Error:', error));
                 SaveViewModelLocal();
+                return true;
             };
 
             // GET /Lobbies/Played => Get the played cards ready for judging
@@ -338,22 +332,34 @@
                     })
                     .catch(error => console.error('Error:', error));
                 SaveViewModelLocal();
+                return true;
             };
 
             // POST /Lobbies/Judge/{cardUrl} => Judge votes on a card, returns a success message
-            // self.voteCard = function (card) {
-            //     fetch(`/Lobbies/Judge/${card}}`, { method: 'POST', headers: { 'Authorization':'Bearer ' + self.token()}})
-            //         .then(response => response.text())
-            //         .then(data => {
-            //             console.log(data);
-            //         })
-            //         .catch(error => console.error('Error:', error));
-            //     SaveViewModelLocal();
-            // };
+            self.judgeCard = function (card) {
+
+                if(! self.amITheJudge())
+                {
+                    console.log("You are not the judge!");
+                    return;
+                }
+                else
+                {
+                    console.log("Judging Card :" + card + " as the winner!");
+                    fetch(`/Lobbies/Judge/${card}`, { method: 'POST', headers: { 'Authorization':'Bearer ' + self.token()}})
+                    .then(response => response.text())
+                        .then(data => {
+                            console.log(data);
+                        })
+                        .catch(error => console.error('Error:', error));
+                    SaveViewModelLocal();
+                }
+             };
         };
 
         ko.applyBindings(lvm);
-        LoadViewModelLocal();
+
+        lvm.loadLobbies();
 
         setInterval(function () {
             // Background refresh of the lobbies so the player numbers are up to date
@@ -361,13 +367,12 @@
         },5000);
 
         setInterval(function () {
+
             if (lvm.myLobbyData().id() != null) {
                 lvm.loadLobby(lvm.token());
-                if(lvm.questionCard() != null && lvm.questionCard() != '')
-                {
+
                     lvm.getCards();
                     lvm.getPlayedCards();
-                }
             }
         }, 1000);
 

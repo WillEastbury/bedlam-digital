@@ -23,26 +23,32 @@ public class Lobby
     List<string> GetAnswerCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*White*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).ToList();
     List<string> ShuffleCards(List<string> cards) => cards.OrderBy(_ => Guid.NewGuid()).ToList();
     public void AddPlayer(Player player) => Players.Add(player);
-    public void PlayCardForPlayer(string playerId, string cardUrl)
+    public bool PlayCardForPlayer(string playerId, string cardUrl)
     {
         // Firstly retrieve the player from the lobby
         var player = Players.FirstOrDefault(p => p.Id == playerId);
-        if (player == null) return;
+        if (player == null) return false;
         // Check if the player is the judge
-        if (Players.IndexOf(player) == JudgeIndex) return;
+        if (Players.IndexOf(player) == JudgeIndex) return false;
         // Validity: Check if the player has the card in their hand
-        if (!player.Cards.Contains(cardUrl)) return;
+        if (!player.Cards.Contains(cardUrl)) return false;
         // Remove the card from the player's hand
         player.Cards.Remove(cardUrl);
         // Add the card to the played cards
         PlayedCards.Add(cardUrl);
         // set the lastplayed card for the player
         player.LastPlayedCard = cardUrl;
+        return true;
     }
     public string JudgeVoteOnCard(string cardUrl)
     {
+        Console.WriteLine("Voting: " + cardUrl); 
         // Look through the players in the lobby and find the one that played that card.
-        Player Winner = Players.FirstOrDefault(p => p.Cards.Contains(cardUrl));
+        foreach(Player p in Players)
+        {
+            Console.WriteLine("Player: " + p.Name + " " + p.LastPlayedCard + " vs. " + cardUrl + " " + (p.LastPlayedCard == cardUrl));
+        }
+        Player Winner = Players.FirstOrDefault(p => p.LastPlayedCard == cardUrl);
         if (Winner == null) throw new Exception("ERR: No Player Specified");
         Winner.WonRound();
         RoundNumber++;

@@ -119,8 +119,16 @@ app.MapPost("/Lobbies/Play/{cardId}", (HttpContext context, string cardId) =>
     }
 
     // Find player and card, perform the player's turn logic
-    lobby.PlayCardForPlayer(playerId, cardId);
-    return Results.Ok(cardId + " Card played successfully for player:" + playerId);
+    if (lobby.PlayCardForPlayer(playerId, cardId))
+    {
+        return Results.Ok(cardId + " Card played successfully for player:" + playerId);
+    }
+    else
+    {
+        return Results.BadRequest($"ERR: Card {cardId} not played successfully for player:{playerId}");
+    
+    }
+    
 });
 
 app.MapGet("/Lobbies/Played", (HttpContext context) =>
