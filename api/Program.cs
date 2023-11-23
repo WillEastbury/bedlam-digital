@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 var players = new List<Player>();
 var lobbies = new List<Lobby>();
-var names = new List<string>() { "Janus (Windows 3.1 and MSDOS 5)", "Anaheim (Microsoft Edge)", "Astro (MS DOS 6)", "Bandit (Schedule Plus)", "Sparta (Windows for Workgroups 3.1)", "Snowball (Windows for Workgroups 3.11)", "Chicago (Windows 95)", "Memphis (Windows 98)", "Millennium (Windows ME)", "Razzle (Windows NT 3.1)", "Daytona (Windows NT 3.5)", "Tukwila (Windows NT 4)", "Cairo", "[] (Windows 2000)", "Whistler (Windows XP)", "Longhorn (Windows Vista)", "Vienna (Windows 7)", "Midori (Application Shim for Singularity, used in SQLPAL)", "Blue (Windows 8.1)", "Threshold (Windows 10)", "Redstone (Windows 10 Creators Update)", "Sun Valley (Windows 11)", "Hudson Valley (Windows 12?)", "Pegasus (Windows CE 1.0)", "Rapier (Windows Pocket PC 2000)", "Maldives (Windows Phone 7)", "Red Dog (Azure)", "Singularity (MSR Managed OS)", "Denali (SQL Server 2012)", "Thunder (Visual Basic 1.0)", "Bullet (MS Mail 3.0)", "Opus (Word for Windows v1.0)", "Wren (Outlook)", "Utopia (Bob UI)", "Marvel (MSN)", "Argo (Zune Player)", "KittyHawk (Visual Studio Lightswitch)", "DirectX Box (Xbox)", "Natal (Kinect)", "Natick (Underwater DC Pod)", "Roslyn (.net compiler platform)", "Aspen (Visual Studio 6.0)", "Rainier (Visual Studio.NET 2002)", "Whidbey (Visual Studio 2005)" };
+var names = new List<string>() {"Janus (Windows 3.1 and MSDOS 5)", "Anaheim (Microsoft Edge)", "Astro (MS DOS 6)", "Bandit (Schedule Plus)", "Sparta (Windows for Workgroups 3.1)", "Snowball (Windows for Workgroups 3.11)", "Chicago (Windows 95)", "Memphis (Windows 98)", "Millennium (Windows ME)", "Razzle (Windows NT 3.1)", "Daytona (Windows NT 3.5)", "Tukwila (Windows NT 4)", "Cairo", "[] (Windows 2000)", "Whistler (Windows XP)", "Longhorn (Windows Vista)", "Vienna (Windows 7)", "Midori (Application Shim for Singularity, used in SQLPAL)", "Blue (Windows 8.1)", "Threshold (Windows 10)", "Redstone (Windows 10 Creators Update)", "Sun Valley (Windows 11)", "Hudson Valley (Windows 12?)", "Pegasus (Windows CE 1.0)", "Rapier (Windows Pocket PC 2000)", "Maldives (Windows Phone 7)", "Red Dog (Azure)", "Singularity (MSR Managed OS)", "Denali (SQL Server 2012)", "Thunder (Visual Basic 1.0)", "Bullet (MS Mail 3.0)", "Opus (Word for Windows v1.0)", "Wren (Outlook)", "Utopia (Bob UI)", "Marvel (MSN)", "Argo (Zune Player)", "KittyHawk (Visual Studio Lightswitch)", "DirectX Box (Xbox)", "Natal (Kinect)", "Natick (Underwater DC Pod)", "Roslyn (.net compiler platform)", "Aspen (Visual Studio 6.0)", "Rainier (Visual Studio.NET 2002)", "Whidbey (Visual Studio 2005)" };
 var app = builder.Build();
 
 // Non-authenticated endpoints first
@@ -16,6 +16,18 @@ app.MapGet("/", () =>
     Console.Write(".");
     var filePath = Path.Combine(Environment.CurrentDirectory, "html", "index.html"); // Replace with the actual path to your SPA's index.html
     return Results.File(filePath, "text/html");
+});
+
+// GET => Serve the root 
+app.MapGet("/Restart", () =>
+{
+    Console.WriteLine(".Restart Request Received");
+
+    // Clear all lobbies and players
+    lobbies.Clear();
+    players.Clear();
+
+    return Results.Ok("Game Engine Restarted!");
 });
 
 // GET => Serve the root 
@@ -183,7 +195,13 @@ app.MapPost("/Lobbies/Judge/{cardUrl}", (HttpContext context, string cardUrl) =>
 
 app.Run();
 
-string GetRandomName() => names[new Random().Next(0, names.Count)];
+string GetRandomName() {
+
+    // Fetch the list of used lobby names 
+    List<string> usedlobbynames = lobbies.Select(f => f.Id).ToList();
+    // Return a random name from the list of names that are not in use
+    return names.Except(usedlobbynames).OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+};
 
 bool SetAuth(HttpContext context, string Claim = null, string Value = null)
 {

@@ -1,382 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bedlam</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <style>
-        /* Add custom CSS styles here */
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .grid-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-        <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp Bedlam Online</a>
-        <div id="navbarNav">
-            <div id="navbarText">
-                <span class="navbar-text">Player:&nbsp </span><span data-bind="text: userName"
-                    class="navbar-text"></span> &nbsp
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bedlam</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <style>
+            /* Add custom CSS styles here */
+            .image-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .grid-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+            <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp Bedlam Online</a>
+            <div id="navbarNav">
+                <div id="navbarText">
+                    <span class="navbar-text">Player:&nbsp </span><span data-bind="text: userName"
+                        class="navbar-text"></span> &nbsp
+                </div>
+                <div id="navbarText">
+                    <span class="navbar-text">In Lobby:&nbsp </span><span data-bind="text: myLobbyData.id"
+                        class="navbar-text"></span> &nbsp
+                </div>
             </div>
-            <div id="navbarText">
-                <span class="navbar-text">In Lobby:&nbsp </span><span data-bind="text: myLobbyData.id"
-                    class="navbar-text"></span> &nbsp
-            </div>
-        </div>
-    </nav>
-    <div class="container-fluid">
-        <ul class="nav nav-tabs">
-            <li class="nav-item active">
-                <a class="nav-link" href="#lobbies-tab" data-bs-toggle="tab">Lobbies</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#gameplay-tab" data-bs-toggle="tab">Play Bedlam!</a>
-            </li>
-        </ul>
-        <div class="tab-content">
-            <!-- Lobbies Tab -->
-            <div class="tab-pane fade active" id="lobbies-tab">
-                <div class="row" id="lobbies">
-                    <div class="col-md-3">
-                        <div data-bind="foreach: lobbies">
-                            <div class="card">
-                                <div class="card-header bg-primary text-light">
-                                    <h5><span data-bind="text: id"></span></h5>
-                                </div>
-                                <div class="card-body">
-                                    <ul data-bind="foreach: players">
-                                        <li>
-                                            <span data-bind="text: name"></span> : 
-                                            <span data-bind="text: score"></span> &nbsp
-                                            <span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span></h5>
-                                        </li>
-                                    </ul>
-                                    <button class="btn btn-primary" data-bind="click: $root.joinLobby">Join Lobby</button>
-                                </div>
-                                <div class="card-footer">
-                                    <strong>Players</strong>
-                                    <span data-bind="text: players().length"></span> Of 8
+        </nav>
+        <div class="container-fluid">
+            <ul class="nav nav-tabs">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#lobbies-tab" data-bs-toggle="tab">Lobbies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#gameplay-tab" data-bs-toggle="tab">Play Bedlam!</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#diags-tab" data-bs-toggle="tab">Game Diags</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <!-- Lobbies Tab -->
+                <div class="tab-pane fade active" id="lobbies-tab">
+                    <div class="row" id="lobbies">
+                        <div class="col-md-3">
+                            <div data-bind="foreach: lobbies">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-light">
+                                        <h5><span data-bind="text: id"></span></h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul data-bind="foreach: players">
+                                            <li>
+                                                <span data-bind="text: name"></span> : 
+                                                <span data-bind="text: score"></span> &nbsp
+                                                <span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span></h5>
+                                            </li>
+                                        </ul>
+                                        <button class="btn btn-primary" data-bind="click: $root.joinLobby">Join Lobby</button>
+                                    </div>
+                                    <div class="card-footer">
+                                        <strong>Players</strong>
+                                        <span data-bind="text: players().length"></span> Of 8
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- Gameplay Tab -->
-            <div class="tab-pane fade" id="gameplay-tab">
-                <div class="row" id="gameplay">
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-light">
-                            <h5>Scoreboard for lobby: <span data-bind="text: myLobbyData().id"></span></h5>
+                <!-- Gameplay Tab -->
+                <div class="tab-pane fade" id="gameplay-tab">
+                    <div class="row" id="gameplay">
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-light">
+                                <h5>Scoreboard for lobby: <span data-bind="text: myLobbyData().id"></span></h5>
+                            </div>
+                            <div class="card-body">
+                                <ul data-bind="foreach: myLobbyData().players">
+                                    <li>
+                                        <span data-bind="text: name"></span>:<span data-bind="text: score"></span><span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span></h5>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-footer">
+                                <strong>Players</strong>&nbsp (<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
+                                <!-- <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button> -->
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <ul data-bind="foreach: myLobbyData().players">
-                                <li>
-                                    <span data-bind="text: name"></span>:<span data-bind="text: score"></span><span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span></h5>
-                                </li>
-                            </ul>
+                    </div>
+                    <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound() && !$root.amITheJudge())">
+                        <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                        <div class="col-md-2">
+                            <img class="img-fluid" data-bind="attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
-                        <div class="card-footer">
-                            <strong>Players</strong>&nbsp (<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
-                            <!-- <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button> -->
+                        <!-- ko foreach: answerCards -->
+                            <div class="col-md-2">
+                                <img class="img-fluid grid-image" data-bind="click: $root.playCard, attr: {src: '/Card/' + $data}" />
+                            </div>
+                        <!-- /ko -->
+                    </div>
+                    <div class="row" id="judging" data-bind="visible: $root.amITheJudge">
+                        <h3>Judging round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                        <div class="col-md-2">
+                            <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
+                        <!-- ko foreach: playedCards -->
+                            <div class="col-md-2">
+                                <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
+                            </div>
+                        <!-- /ko -->
+                        <div id="status"></div>
+                    </div>
+                    <div class="row" id="viewing" data-bind="visible: ($root.iHavePlayedThisRound() && !$root.amITheJudge())">
+                        <h3>Viewing Played Cards for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                        <div class="col-md-2">
+                            <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
+                        </div>
+                        <!-- ko foreach: playedCards -->
+                            <div class="col-md-2">
+                                <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
+                            </div>
+                        <!-- /ko -->
+                        <div id="status"></div>
                     </div>
                 </div>
-                <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound() && !$root.amITheJudge())">
-                    <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                    <div class="col-md-2">
-                        <img class="img-fluid" data-bind="attr: {src: '/Card/' + $root.questionCard()}" />
+                <!-- Diags Tab -->
+                <div class="tab-pane fade active" id="diags-tab">
+                    <div class="row" id="diags">
+                        <pre data-bind="text: ko.toJSON($root, null, 2)"></pre>
                     </div>
-                    <!-- ko foreach: answerCards -->
-                        <div class="col-md-2">
-                            <img class="img-fluid grid-image" data-bind="click: $root.playCard, attr: {src: '/Card/' + $data}" />
-                        </div>
-                    <!-- /ko -->
-                </div>
-                <div class="row" id="judging" data-bind="visible: $root.amITheJudge">
-                    <h3>Judging round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                    <div class="col-md-2">
-                        <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
-                    </div>
-                    <!-- ko foreach: playedCards -->
-                        <div class="col-md-2">
-                            <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
-                        </div>
-                    <!-- /ko -->
-                    <div id="status"></div>
-                </div>
-                <div class="row" id="viewing" data-bind="visible: ($root.iHavePlayedThisRound() && !$root.amITheJudge())">
-                    <h3>Viewing Played Cards for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                    <div class="col-md-2">
-                        <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
-                    </div>
-                    <!-- ko foreach: playedCards -->
-                        <div class="col-md-2">
-                            <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
-                        </div>
-                    <!-- /ko -->
-                    <div id="status"></div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js" integrity="sha512-vs7+jbztHoMto5Yd/yinM4/y2DOkPLt0fATcN+j+G4ANY2z4faIzZIOMkpBmWdcxt+596FemCh9M18NUJTZwvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-
-        var lvm = new GameViewModel(false);
-
-        // Design a function to store the viewmodel state to HTML5 local storage
-        function SaveViewModelLocal() {
-
-            // Save the viewmodel state to local storage
-            localStorage.setItem("lvm", btoa(ko.toJSON(lvm)));
-
-        }
-
-        function ReloadOnCrash() {
-
-            // Load the viewmodel state from local storage
-            if (localStorage.getItem("lvm") != null) {
-
-                setTimeout(function () {
-
-                    console.log("Reloading State");
-                    var lvmObj = JSON.parse(atob(localStorage.getItem("lvm")));
-
-                    lvm.userName(lvmObj.userName);
-                    lvm.token(lvmObj.token);
-
-                    // Map the props of my lobby data
-                    lvm.myLobbyData = ko.observable(new Lobby(
-                        lvmObj.myLobbyData.id, 
-                        lvmObj.myLobbyData.Players, 
-                        lvmObj.myLobbyData.playedCards, 
-                        lvmObj.myLobbyData.roundNumber,
-                        lvmObj.myLobbyData.judgeIndex
-                    ));
-
-                    lvm.questionCard(lvmObj.questionCard);
-                    lvm.answerCards([]);
-
-                    lvmObj.answerCards.forEach(function (card) {
-                        lvm.answerCards.push(card);
-                    });
-                    lvm.lobbies([]);
-
-                    lvmObj.lobbies.forEach(function (lobby) {
-                        lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex));
-                    });
-                    console.log("Loading Complete:", lvmObj);
-                }, 2000);
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js" integrity="sha512-vs7+jbztHoMto5Yd/yinM4/y2DOkPLt0fATcN+j+G4ANY2z4faIzZIOMkpBmWdcxt+596FemCh9M18NUJTZwvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            var lvm = new GameViewModel(false);
+            // Design a function to store the viewmodel state to HTML5 local storage
+            function SaveViewModelLocal() {
+                // Save the viewmodel state to local storage
+                localStorage.setItem("lvm", btoa(ko.toJSON(lvm)));
             }
-        }
-
-        // Declare a lobby with constructor to hold the lobby information
-        function Lobby(id, players, playedCards, roundNumber, judgeIndex) {
-            return {
-                id: ko.observable(id),
-                players: ko.observableArray(players),
-                playedCards: ko.observableArray(playedCards),
-                roundNumber: ko.observable(roundNumber),
-                judgeIndex: ko.observable(judgeIndex)
-            };
-        }
-
-        function GameViewModel(cycle) {
-
-            var self = this;
-
-            self.cycling = cycle;
-
-            // All Players stuff
-            self.lobbies = ko.observableArray([]);
-
-            // My stuff 
-            self.userName = ko.observable("");
-            self.token = ko.observable("");
-
-            // This rounds Stuff
-            self.myLobbyData = ko.observable(Lobby(null, [], [], 0, 0));
-            self.questionCard = ko.observable("");
-            self.answerCards = ko.observableArray([]);
-            self.playedCards = ko.observableArray([]);
-
-            self.iHavePlayedThisRound = ko.computed(function () {
-                // If the LastPlayedCard is not null for my player object (match by player.name to my username) then I have played this round
-                return self.myLobbyData().players().some(player => player.name === self.userName() && player.lastPlayedCard != '');
-            });
-
-            self.amITheJudge = ko.computed(function () {
-                // If the JudgeIndex is the same as my player index then I am the judge
-                return self.myLobbyData().players().findIndex(player => player.name === self.userName()) == self.myLobbyData().judgeIndex();
-            });
-
-            // Methods 
-
-            // GET /Lobbies => Returns a list RESTRICTED LIST OF DATA for ALL lobbies (THE Lobby names and memberships) via a dto to mask keys etc.
-            self.loadLobbies = function () {
-                fetch("/Lobbies", { method: 'GET' }, { headers: { 'Content-Type': 'application/json' } })
-                    .then(response => response.json())
-                    .then(data => {
-                        self.lobbies([]);
-                        data.forEach(function (lobby) {
-                            var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex);
-                            self.lobbies.push(newLobby);
+            function ReloadOnCrash() {
+                // Load the viewmodel state from local storage
+                if (localStorage.getItem("lvm") != null) {
+                    setTimeout(function () {
+                        console.log("Reloading State");
+                        var lvmObj = JSON.parse(atob(localStorage.getItem("lvm")));
+                        lvm.userName(lvmObj.userName);
+                        lvm.token(lvmObj.token);
+                        // Map the props of my lobby data
+                        lvm.myLobbyData = ko.observable(new Lobby(
+                            lvmObj.myLobbyData.id, 
+                            lvmObj.myLobbyData.Players, 
+                            lvmObj.myLobbyData.playedCards, 
+                            lvmObj.myLobbyData.roundNumber,
+                            lvmObj.myLobbyData.judgeIndex
+                        ));
+                        lvm.questionCard(lvmObj.questionCard);
+                        lvm.answerCards([]);
+                        lvmObj.answerCards.forEach(function (card) {
+                            lvm.answerCards.push(card);
                         });
-                    })
-                    .catch(error => console.error('Error:', error));
-                SaveViewModelLocal();
-            };
-
-            // GET /MyLobby => Returns the extended content of the specific lobby dto the user is in with the specified id from the token
-            self.loadLobby = function (token) {
-                //console.log("Loading Lobby", 'Bearer ' + token)
-                fetch('/MyLobby',
-                    { method: 'GET', headers: {'Authorization': 'Bearer ' + token}})
-                    .then(response => response.json())
-                    .then(data => {
-
-                        // If the round number just changed then the judge just voted and we need to clear the played cards
-                        if (self.myLobbyData().roundNumber() != data.roundNumber) {
-                           self.myLobbyData().players([]);
-                        }
-
-                        self.myLobbyData().id(data.id);
-                        self.myLobbyData().players(data.players);
-                        self.myLobbyData().playedCards(data.playedCards);
-                        self.myLobbyData().roundNumber(data.roundNumber);
-                        self.myLobbyData().judgeIndex(data.judgeIndex);
-                    })
-                    .catch(error => console.error('Error:', error));
-                SaveViewModelLocal();
-            };
-
-            // GET /Login/{LobbyId} => Joins a user to the game, returns a JWT for the user to send on subsequent requests
-            self.joinLobby = function (lobby) {
-                self.userName(prompt("Please enter your name", ""));
-                fetch(`/Login/${lobby.id()}/${self.userName()}`,
-                    { method: 'GET' })
-                    .then(response => response.text())
-                    .then(data => {
-                        self.token(data.replace("\"", "").replace("\"", ""));
-                        self.loadLobby(data.replace("\"", "").replace("\"", ""));
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error:'+ error)
-                    });
-                SaveViewModelLocal();
-            };
-
-            // GET /Cards => Fetches the cards for this round, returns a card dto specific to the user based on the token.
-            self.getCards = function () {
-                fetch('/Cards', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data == "ERR: /Cards Not authed") {
-                            // This shouldn't happen and is indicative of someone trying to hack the game or there is an old token Being used and the game has restarted since. 
-                            lvm.cycling = false;
-                            localStorage["lvm"] = null;
-                            alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
-                        }
-                        else {
-                            console.log("Setting Q+A Cards Received");
-                            self.questionCard(data.questionCard);
-                            self.answerCards([]);
-                            data.answerCards.forEach(function (card) {
-                                self.answerCards.push(card);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                            console.error('Error:', error);
-                    });
-                SaveViewModelLocal();
-                return true;
-            };
-
-            // POST /Lobbies/Play/{CardId} => Plays a card for a player into a lobby, returns a success message or error message
-            self.playCard = function (card) {
-                console.log("Playing Card " + card);
-                fetch(`/Lobbies/Play/${card}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token() } })
-                    .then(response => response.text())
-                    .then(data => {
-                        console.log('Response' + data);
-                    })
-                    .catch(error => console.error('Error:', error));
-                SaveViewModelLocal();
-                return true;
-            };
-
-            // GET /Lobbies/Played => Get the played cards ready for judging
-            self.getPlayedCards = function () {
-                fetch('/Lobbies/Played', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
-                    .then(response => response.json())
-                    .then(data => {
-                        self.playedCards([]);
-                        data.forEach(function (card) {
-                            self.playedCards.push(card);
+                        lvm.lobbies([]);
+                        lvmObj.lobbies.forEach(function (lobby) {
+                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex));
                         });
-                    })
-                    .catch(error => console.error('Error:', error));
-                SaveViewModelLocal();
-                return true;
-            };
-
-            // POST /Lobbies/Judge/{cardUrl} => Judge votes on a card, returns a success message
-            self.judgeCard = function (card) {
-
-                if(! self.amITheJudge())
-                {
-                    console.log("You are not the judge!");
-                    return;
+                        console.log("Loading Complete:", lvmObj);
+                    }, 2000);
                 }
-                else
-                {
-                    console.log("Judging Card :" + card + " as the winner!");
-                    fetch(`/Lobbies/Judge/${card}`, { method: 'POST', headers: { 'Authorization':'Bearer ' + self.token()}})
-                    .then(response => response.text())
+            }
+            // Declare a lobby with constructor to hold the lobby information
+            function Lobby(id, players, playedCards, roundNumber, judgeIndex) {
+                return {
+                    id: ko.observable(id),
+                    players: ko.observableArray(players),
+                    playedCards: ko.observableArray(playedCards),
+                    roundNumber: ko.observable(roundNumber),
+                    judgeIndex: ko.observable(judgeIndex)
+                };
+            }
+            function GameViewModel() {
+                var self = this;
+                // All Players stuff
+                self.lobbies = ko.observableArray([]);
+                // My stuff 
+                self.userName = ko.observable("");
+                self.token = ko.observable("");
+                // This rounds Stuff
+                self.myLobbyData = ko.observable(Lobby(null, [], [], 0, 0));
+                self.questionCard = ko.observable("");
+                self.answerCards = ko.observableArray([]);
+                self.playedCards = ko.observableArray([]);
+
+                self.RoundPlayedIndex = ko.computed(function(){
+                    return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != ''))
+                });
+
+                self.iHavePlayedThisRound = ko.computed(function () {
+                    // If the LastPlayedCard is not null for my player object (match by player.name to my username) then I have played this round
+                    return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != '')) != -1;
+                });
+
+                self.amITheJudge = ko.computed(function () {
+                    // If the JudgeIndex is the same as my player index then I am the judge
+                    return self.myLobbyData().players().findIndex(player => player.name === self.userName()) == self.myLobbyData().judgeIndex();
+                });
+
+                // Methods 
+                // GET /Lobbies => Returns a list RESTRICTED LIST OF DATA for ALL lobbies (THE Lobby names and memberships) via a dto to mask keys etc.
+                self.loadLobbies = function () {
+                    fetch("/Lobbies", { method: 'GET' }, { headers: { 'Content-Type': 'application/json' } })
+                        .then(response => response.json())
                         .then(data => {
-                            console.log(data);
+                            self.lobbies([]);
+                            data.forEach(function (lobby) {
+                                var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex);
+                                self.lobbies.push(newLobby);
+                            });
                         })
                         .catch(error => console.error('Error:', error));
                     SaveViewModelLocal();
-                }
-             };
-        };
+                };
 
-        ko.applyBindings(lvm);
+                // GET /MyLobby => Returns the extended content of the specific lobby dto the user is in with the specified id from the token
+                self.loadLobby = function (token) {
+                    //console.log("Loading Lobby", 'Bearer ' + token)
+                    fetch('/MyLobby',
+                        { method: 'GET', headers: {'Authorization': 'Bearer ' + token}})
+                        .then(response => response.json())
+                        .then(data => {
 
-        lvm.loadLobbies();
+                            // If the round number just changed then the judge just voted and we need to clear the played cards
+                            if (self.myLobbyData().roundNumber() != data.roundNumber) {
+                                self.myLobbyData().players([]);
+                            }
 
-        setInterval(function () {
-            // Background refresh of the lobbies so the player numbers are up to date
-            lvm.loadLobbies();
-        },5000);
 
-        setInterval(function () {
+                            self.myLobbyData().id(data.id);
+                            self.myLobbyData().players(data.players);
+                            self.myLobbyData().playedCards(data.playedCards);
+                            self.myLobbyData().roundNumber(data.roundNumber);
+                            self.myLobbyData().judgeIndex(data.judgeIndex);
+                            // If this is the 10th round then the game is over and WE NEED TO popup a message
+                            if (data.roundNumber >= 8) {
+                                // Who has the highest score? 
+                                var sortedPlayers = data.players.sort(function (a, b) {
+                                    return b.score - a.score;
+                                }); // Sort descending
+                                alert("Game Over! The winner is " + sortedPlayers[0].name + " with a score of " + sortedPlayers[0].score);
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    SaveViewModelLocal();
+                };
 
-            if (lvm.myLobbyData().id() != null) {
-                lvm.loadLobby(lvm.token());
+                // GET /Login/{LobbyId} => Joins a user to the game, returns a JWT for the user to send on subsequent requests
+                self.joinLobby = function (lobby) {
+                    self.userName(prompt("Please enter your name", ""));
+                    fetch(`/Login/${lobby.id()}/${self.userName()}`,
+                        { method: 'GET' })
+                        .then(response => response.text())
+                        .then(data => {
+                            self.token(data.replace("\"", "").replace("\"", ""));
+                            self.loadLobby(data.replace("\"", "").replace("\"", ""));
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error:'+ error)
+                        });
+                    SaveViewModelLocal();
+                };
 
+                // GET /Cards => Fetches the cards for this round, returns a card dto specific to the user based on the token.
+                self.getCards = function () {
+                    fetch('/Cards', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data == "ERR: /Cards Not authed") {
+                                // This shouldn't happen and is indicative of someone trying to hack the game or there is an old token Being used and the game has restarted since. 
+                                lvm.cycling = false;
+                                localStorage["lvm"] = null;
+                                alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
+                            }
+                            else {
+                                console.log("Setting Q+A Cards Received");
+                                self.questionCard(data.questionCard);
+                                self.answerCards([]);
+                                data.answerCards.forEach(function (card) {
+                                    self.answerCards.push(card);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                                console.error('Error:', error);
+                        });
+                    SaveViewModelLocal();
+                    return true;
+                };
+
+                // POST /Lobbies/Play/{CardId} => Plays a card for a player into a lobby, returns a success message or error message
+                self.playCard = function (card) {
+                    console.log("Playing Card " + card);
+                    fetch(`/Lobbies/Play/${card}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token() } })
+                        .then(response => response.text())
+                        .then(data => {
+                            console.log('Response' + data);
+                        })
+                        .catch(error => console.error('Error:', error));
+                    SaveViewModelLocal();
+                    return true;
+                };
+
+                // GET /Lobbies/Played => Get the played cards ready for judging
+                self.getPlayedCards = function () {
+                    fetch('/Lobbies/Played', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
+                        .then(response => response.json())
+                        .then(data => {
+                            self.playedCards([]);
+                            data.forEach(function (card) {
+                                self.playedCards.push(card);
+                            });
+                        })
+                        .catch(error => console.error('Error:', error));
+                    SaveViewModelLocal();
+                    return true;
+                };
+
+                // POST /Lobbies/Judge/{cardUrl} => Judge votes on a card, returns a success message
+                self.judgeCard = function (card) {
+                    if(! self.amITheJudge())
+                    {
+                        console.log("You are not the judge!");
+                        return;
+                    }
+                    else
+                    {
+                        console.log("Judging Card :" + card + " as the winner!");
+                        fetch(`/Lobbies/Judge/${card}`, { method: 'POST', headers: { 'Authorization':'Bearer ' + self.token()}})
+                        .then(response => response.text())
+                            .then(data => {
+                                console.log(data);
+                            })
+                            .catch(error => console.error('Error:', error));
+                        SaveViewModelLocal();
+                    }
+                };
+            };
+            ko.applyBindings(lvm);
+            setInterval(function () {
+                lvm.loadLobbies();
+                if (lvm.myLobbyData().id() != null) {
+                    lvm.loadLobby(lvm.token());
                     lvm.getCards();
                     lvm.getPlayedCards();
-            }
-        }, 1000);
-
-    </script>
-</body>
-
+                }
+            }, 1000);
+        </script>
+    </body>
 </html>

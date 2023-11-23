@@ -1,14 +1,17 @@
+using Microsoft.Net.Http.Headers;
+
 public class Lobby
 {
     public static int MaxPlayers = 8;
     public static int MaxRounds = 8;
-    public static int CardsDealtPerPlayer = 10;
+    public static int CardsDealtPerPlayer = 8;
     public string Id { get; private set;}
     public List<Player> Players { get; private set;} = new List<Player>();
     public List<string> QuestionDeck { get; private set;}
     public List<string> AnswerDeck { get; private set;}
     public List<string> PlayedCards { get; private set;} = new List<string>();
-    public int RoundNumber {get; set;} = 01;
+    public Dictionary<string,string> LobbyHistory {get;set;} = new();
+    public int RoundNumber {get; set;} = 1;
     public int JudgeIndex { get; set;}
     public string CurrentQuestionCard => QuestionDeck[RoundNumber];
     public Lobby(string id)
@@ -16,7 +19,7 @@ public class Lobby
         Id = id;
         QuestionDeck = ShuffleCards(GetQuestionCards());
         AnswerDeck = ShuffleCards(GetAnswerCards());
-        JudgeIndex = new Random().Next(0, Players.Count);
+        JudgeIndex = 0;
 
      }
     List<string> GetQuestionCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*Black*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).ToList();
@@ -32,10 +35,13 @@ public class Lobby
         if (Players.IndexOf(player) == JudgeIndex) return false;
         // Validity: Check if the player has the card in their hand
         if (!player.Cards.Contains(cardUrl)) return false;
+
         // Remove the card from the player's hand
         player.Cards.Remove(cardUrl);
+        
         // Add the card to the played cards
         PlayedCards.Add(cardUrl);
+        
         // set the lastplayed card for the player
         player.LastPlayedCard = cardUrl;
         return true;
@@ -58,7 +64,12 @@ public class Lobby
         {
             player.LastPlayedCard = null;
         }
-        JudgeIndex = new Random().Next(0, Players.Count);
+        JudgeIndex ++;
+        if (JudgeIndex >= Players.Count) {
+            // if the judge index is greater than the number of players, reset it to 0
+            JudgeIndex = 0;
+        }
+        LobbyHistory.Add(CurrentQuestionCard, cardUrl);
         return Winner.Name + " won the round! with Card <a href='/Card/" + cardUrl + " '>this card </a>, they now have " + Winner.Score + " points!";
     }
 }
