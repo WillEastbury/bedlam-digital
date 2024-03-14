@@ -10,7 +10,7 @@
     <Content Include="html\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"></Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.*" />
   </ItemGroup>
 
 </Project>

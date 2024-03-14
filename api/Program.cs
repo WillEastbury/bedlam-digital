@@ -118,7 +118,7 @@ app.MapGet("/MyLobby", (HttpContext context) =>
 
     if (lobby == null)
     {
-        return Results.NotFound($"Lobby not found, but for your valid issued token ?!?!!? This should not occurr, please let Will.E know how you got this far ?! ;)");
+        return Results.NotFound($"Lobby not found, but for your valid issued token ?!?!!? This should not occur, please let Will.E know how you got this far ?! ;)");
     }
 
     return Results.Ok(new MyLobbyDto(lobby));
@@ -182,9 +182,7 @@ app.MapPost("/Lobbies/Play/{cardId}", (HttpContext context, string cardId) =>
     else
     {
         return Results.BadRequest($"ERR: Card {cardId} not played successfully for player:{playerId}");
-    
     }
-    
 });
 
 app.MapGet("/Lobbies/Played", (HttpContext context) =>
@@ -210,7 +208,6 @@ app.MapGet("/Lobbies/Played", (HttpContext context) =>
 // POST /Lobbies/Judge/{cardUrl} => Judge votes on a card, returns a success message
 app.MapPost("/Lobbies/Judge/{cardUrl}", (HttpContext context, string cardUrl) =>
 {
-
     if (!SetAuth(context))
     {
         return Results.BadRequest("/Lobbies/Judge/{Card} ERR: Notauthed.");
@@ -224,6 +221,7 @@ app.MapPost("/Lobbies/Judge/{cardUrl}", (HttpContext context, string cardUrl) =>
     {
         return Results.NotFound("ERR: Lobby not found.");
     }
+
     string judging = lobby.JudgeVoteOnCard(cardUrl); // Judge votes on a card
 
     if (judging.StartsWith("ERR:"))

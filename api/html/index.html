@@ -46,6 +46,7 @@
                 </li>
             </ul>
             <div class="tab-content">
+                                
                 <!-- Lobbies Tab -->
                 <div class="tab-pane fade active" id="lobbies-tab">
                     <div class="row" id="lobbies">
@@ -53,7 +54,13 @@
                             <div data-bind="foreach: lobbies">
                                 <div class="card">
                                     <div class="card-header bg-primary text-light">
-                                        <h5>Codename: <span data-bind="text: id"></span></h5>
+                                        <p>
+                                            <strong>Lobby Codename: </strong>
+                                            <span data-bind="text: id"></span>, <strong>Players</strong>
+                                            <span data-bind="text: players().length"></span> Of 8
+                                            <span data-bind="visible: players().length == 8" class="badge bg-danger">Full</span>
+                                            <span data-bind="visible: roundNumber() > 1" class="badge bg-danger">Started</span>
+                                        </p>
                                     </div>
                                     <div class="card-body">
                                         <div data-bind="foreach: players">
@@ -65,17 +72,12 @@
                                         </div>
                                         <button class="btn btn-success" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1), click: $root.joinLobby">Join</button>
                                     </div>
-                                    <div class="card-footer">
-                                        <strong>Players</strong>
-                                        <span data-bind="text: players().length"></span> Of 8
-                                        <span data-bind="visible: players().length == 8" class="badge bg-danger">Full</span>
-                                        <span data-bind="visible: roundNumber() > 1" class="badge bg-danger">Started</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
                 <!-- Gameplay Tab -->
                 <div class="tab-pane fade" id="gameplay-tab">
                     <div class="row" id="gameplay">
@@ -96,6 +98,7 @@
                             </div>
                             <div class="card-footer">
                                 <strong>Players</strong>&nbsp (<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
+          
                                 <!-- <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button> -->
                             </div>
                         </div>
@@ -133,9 +136,14 @@
                                 <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
                             </div>
                         <!-- /ko -->
-                        <div id="status"></div>
+                    </div>
+                    <div class="row" id="lobbydata" data-bind="foreach: myLobbyData().lobbyHistory()">
+                        <div class="col-md-1">
+                            <img class="img-fluid grid-image" data-bind=" attr: {src: '/Card/' + $data}" />
+                        </div>
                     </div>
                 </div>
+               
                 <!-- Diags Tab -->
                 <div class="tab-pane fade active" id="diags-tab">
                     <div class="row" id="diags">
@@ -144,10 +152,13 @@
                 </div>
             </div>
         </div>
+        
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js" integrity="sha512-vs7+jbztHoMto5Yd/yinM4/y2DOkPLt0fATcN+j+G4ANY2z4faIzZIOMkpBmWdcxt+596FemCh9M18NUJTZwvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>
+
             var lvm = new GameViewModel(false);
+
             // Design a function to store the viewmodel state to HTML5 local storage
             function SaveViewModelLocal() {
                 // Save the viewmodel state to local storage
@@ -183,25 +194,28 @@
                 }
             }
             // Declare a lobby with constructor to hold the lobby information
-            function Lobby(id, players, playedCards, roundNumber, judgeIndex) {
+            function Lobby(id, players, playedCards, roundNumber, judgeIndex, lobbyHistory) {
                 return {
                     id: ko.observable(id),
                     players: ko.observableArray(players),
                     playedCards: ko.observableArray(playedCards),
                     roundNumber: ko.observable(roundNumber),
-                    judgeIndex: ko.observable(judgeIndex)
+                    judgeIndex: ko.observable(judgeIndex),
+                    lobbyHistory: ko.observableArray(lobbyHistory)
                 };
             }
 
             function GameViewModel() {
                 var self = this;
+                popup_endgame = false;
                 // All Players stuff
                 self.lobbies = ko.observableArray([]);
                 // My stuff 
                 self.userName = ko.observable("");
                 self.token = ko.observable("");
+                                
                 // This rounds Stuff
-                self.myLobbyData = ko.observable(Lobby(null, [], [], 0, 0));
+                self.myLobbyData = ko.observable(Lobby(null, [], [], 0, 0, []));
                 self.questionCard = ko.observable("");
                 self.answerCards = ko.observableArray([]);
                 self.playedCards = ko.observableArray([]);
@@ -221,7 +235,7 @@
                 });
 
                 self.roundJudgeName = ko.computed(function () {
-                //    return self.myLobbyData().players()[self.myLobbyData().judgeIndex()].name;
+                    //return self.myLobbyData().players().findIndex(player => player.name === self.userName()).player.name;
                 });
 
                 // Methods 
@@ -232,7 +246,8 @@
                         .then(data => {
                             self.lobbies([]);
                             data.forEach(function (lobby) {
-                                var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex);
+                                
+                                var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, cardHistory);
                                 self.lobbies.push(newLobby);
                             });
                         })
@@ -258,13 +273,25 @@
                             self.myLobbyData().playedCards(data.playedCards);
                             self.myLobbyData().roundNumber(data.roundNumber);
                             self.myLobbyData().judgeIndex(data.judgeIndex);
+                            
+                            self.myLobbyData().lobbyHistory([]);
+
+                            data.cardHistory.forEach(function (cardH)
+                            {
+                                self.myLobbyData().lobbyHistory.push(cardH);
+                            });
+
                             // If this is the 10th round then the game is over and WE NEED TO popup a message
-                            if (data.roundNumber >= 8) {
+                            if (data.roundNumber > 12) {
                                 // Who has the highest score? 
                                 var sortedPlayers = data.players.sort(function (a, b) {
                                     return b.score - a.score;
-                                }); // Sort descending
-                                alert("Game Over! The winner is " + sortedPlayers[0].name + " with a score of " + sortedPlayers[0].score);
+                                }); 
+                                // Sort descending
+                                if (!popup_endgame) {
+                                    alert("Game Over! The winner is " + sortedPlayers[0].name + " with a score of " + sortedPlayers[0].score);
+                                    popup_endgame = true;
+                                }
                             }
                         })
                         .catch(error => console.error('Error:', error));
@@ -297,7 +324,11 @@
                                 // This shouldn't happen and is indicative of someone trying to hack the game or there is an old token Being used and the game has restarted since. 
                                 lvm.cycling = false;
                                 localStorage["lvm"] = null;
-                                alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
+
+                                if(localStorage["logoutdisplayed"] = false)
+                                    alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
+                                
+                                    localStorage["logoutdisplayed"] = true;
                             }
                             else {
                                 console.log("Setting Q+A Cards Received");

@@ -70,6 +70,7 @@ public class Lobby
             JudgeIndex = 0;
         }
         LobbyHistory.Add(CurrentQuestionCard, cardUrl);
+
         return Winner.Name + " won the round! with Card <a href='/Card/" + cardUrl + " '>this card </a>, they now have " + Winner.Score + " points!";
     }
 }

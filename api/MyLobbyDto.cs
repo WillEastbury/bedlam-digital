@@ -13,7 +13,9 @@ public class MyLobbyDto
     public List<string> PlayedCards { get; set; }
     public int RoundNumber { get; set; }
     public int JudgeIndex { get; set; }
-
+    // I want to flatten this into a sequential list of cards 
+    public Dictionary<string, string> LobbyHistory { get; set; } = new(); 
+    public List<string> CardHistory => LobbyHistory.SelectMany(e => new List<string> {e.Key, e.Value}).ToList();
     public MyLobbyDto(Lobby lobby)
     {
         Id = lobby.Id;
@@ -21,5 +23,7 @@ public class MyLobbyDto
         PlayedCards = lobby.PlayedCards;
         RoundNumber = lobby.RoundNumber;
         JudgeIndex = lobby.JudgeIndex;
+        LobbyHistory = lobby.LobbyHistory;
     }
+    
 }
