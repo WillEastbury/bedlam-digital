@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/20d33833-2ab5-4460-ba7d-d34b5135c24a/resourceGroups/test-store_group/providers/Microsoft.Web/sites/bedlamonline",
+    "appService.deploySubpath": "api"
+}
