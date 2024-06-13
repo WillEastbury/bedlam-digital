@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "JQW8mpLYpv/4HaaIYaP2RGpLqW/I4KH/bG0jqEtunq+hMtUxb/Bf4g3Ats7slO2k/nI1pvg7YRpn7hQ+NQ7DIg==",
+  "dgSpecHash": "iSMqLmy1RFh6IllXxvuKuixobGFzmbxxgUuOvoRpyB9ZEcUDB/Ur3w4fSWzUCsu3uMRS3do4gnQjGEJmyaU2VA==",
   "success": true,
   "projectFilePath": "C:\\Source\\Bedlam\\bedlam\\api\\api.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.4.0\\microsoft.identitymodel.abstractions.7.4.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.4.0\\microsoft.identitymodel.jsonwebtokens.7.4.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.logging\\7.4.0\\microsoft.identitymodel.logging.7.4.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.4.0\\microsoft.identitymodel.tokens.7.4.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.4.0\\system.identitymodel.tokens.jwt.7.4.0.nupkg.sha512"
+    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.6.0\\microsoft.identitymodel.abstractions.7.6.0.nupkg.sha512",
+    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.6.0\\microsoft.identitymodel.jsonwebtokens.7.6.0.nupkg.sha512",
+    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.logging\\7.6.0\\microsoft.identitymodel.logging.7.6.0.nupkg.sha512",
+    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.6.0\\microsoft.identitymodel.tokens.7.6.0.nupkg.sha512",
+    "C:\\Users\\wieastbu\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.6.0\\system.identitymodel.tokens.jwt.7.6.0.nupkg.sha512"
   ],
   "logs": []
 }
