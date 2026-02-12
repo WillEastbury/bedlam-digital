@@ -8,6 +8,7 @@
   <ItemGroup>
     <Content Include="Cards-PNG\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"></Content>
     <Content Include="html\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"></Content>
+    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"></Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.*" />
