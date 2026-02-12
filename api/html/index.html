@@ -83,7 +83,7 @@
             
             .nav-link.play-bedlam-active {
                 animation: pulse-glow 2s infinite;
-                background-color: rgba(13, 202, 240, 0.2) !important;
+                background-color: rgba(13, 202, 240, 0.2);
                 font-weight: bold;
                 border: 2px solid #0dcaf0;
             }
@@ -111,7 +111,7 @@
                 <li class="nav-item">
                     <a class="nav-link" id="play-bedlam-tab" href="#gameplay-tab" data-bs-toggle="tab">
                         Play Bedlam!
-                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;" role="status" aria-label="New feature available">NEW</span>
+                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;" aria-label="New feature available">NEW</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -389,8 +389,9 @@
                                 var playTab = document.getElementById('play-bedlam-tab');
                                 var playBadge = document.getElementById('play-bedlam-badge');
                                 if (playTab) {
-                                    // Activate the Play Bedlam tab
-                                    playTab.click();
+                                    // Activate the Play Bedlam tab using Bootstrap Tab API
+                                    var tab = new bootstrap.Tab(playTab);
+                                    tab.show();
                                     // Add pulsing animation class
                                     playTab.classList.add('play-bedlam-active');
                                     // Show badge
