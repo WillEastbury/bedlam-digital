@@ -5,3 +5,7 @@ api/obj/
 # Temporary files
 *.log
 *.tmp
+
+# Node modules
+api/node_modules/
+api/package-lock.json

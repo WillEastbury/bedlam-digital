@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMemoryCache();
 var players = new ConcurrentBag<Player>();
 var lobbies = new ConcurrentBag<Lobby>();
 var lobbiesLock = new object();
@@ -53,16 +55,75 @@ var names = new List<string>() {
     "Whidbey (Visual Studio 2005)" 
 };
 var app = builder.Build();
+var cache = app.Services.GetRequiredService<IMemoryCache>();
+
+// Helper function to validate filename for security
+bool IsValidFileName(string fileName)
+{
+    return !string.IsNullOrEmpty(fileName) && 
+           !fileName.Contains("..") && 
+           !fileName.Contains("/") && 
+           !fileName.Contains("\\");
+}
+
+// Helper function to serve cached static files
+async Task<IResult> ServeCachedFile(string filePath, string contentType, string cacheKey)
+{
+    if (!cache.TryGetValue(cacheKey, out byte[] fileContent))
+    {
+        var fullPath = Path.Combine(Environment.CurrentDirectory, filePath);
+        if (!File.Exists(fullPath))
+        {
+            return Results.NotFound();
+        }
+        fileContent = await File.ReadAllBytesAsync(fullPath);
+        cache.Set(cacheKey, fileContent, new MemoryCacheEntryOptions
+        {
+            Priority = CacheItemPriority.High,
+            SlidingExpiration = TimeSpan.FromHours(1)
+        });
+    }
+    return Results.Bytes(fileContent, contentType);
+}
 
 // Non-authenticated endpoints first
 // ---------------------------------
 
-// GET => Serve the root 
-app.MapGet("/", () =>
+// GET => Serve static CSS files with caching
+app.MapGet("/css/{fileName}", async (string fileName) =>
+{
+    if (!IsValidFileName(fileName))
+    {
+        return Results.BadRequest("Invalid filename");
+    }
+    return await ServeCachedFile($"wwwroot/css/{fileName}", "text/css", $"css-{fileName}");
+});
+
+// GET => Serve static JS files with caching
+app.MapGet("/js/{fileName}", async (string fileName) =>
+{
+    if (!IsValidFileName(fileName))
+    {
+        return Results.BadRequest("Invalid filename");
+    }
+    return await ServeCachedFile($"wwwroot/js/{fileName}", "application/javascript", $"js-{fileName}");
+});
+
+// GET => Serve the root with caching
+app.MapGet("/", async () =>
 {
     Console.Write(".");
-    var filePath = Path.Combine(Environment.CurrentDirectory, "html", "index.html"); // Replace with the actual path to your SPA's index.html
-    return Results.File(filePath, "text/html");
+    if (!cache.TryGetValue("index-html", out byte[] htmlContent))
+    {
+        var filePath = Path.Combine(Environment.CurrentDirectory, "html", "index.html");
+        htmlContent = await File.ReadAllBytesAsync(filePath);
+        cache.Set("index-html", htmlContent, new MemoryCacheEntryOptions
+        {
+            Priority = CacheItemPriority.High,
+            SlidingExpiration = TimeSpan.FromHours(1)
+        });
+    }
+    return Results.Bytes(htmlContent, "text/html");
 });
 
 // GET => Serve the root 
