@@ -21,22 +21,22 @@
     </head>
     <body>
         <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-            <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp Bedlam Online</a>
-            <div id="navbarNav">
-                <div id="navbarText">
-                    <span class="navbar-text">Player:&nbsp </span><span data-bind="text: userName"
-                        class="navbar-text"></span> &nbsp
-                </div>
-                <div id="navbarText">
-                    <span class="navbar-text">In Lobby:&nbsp </span><span data-bind="text: myLobbyData().id"
-                        class="navbar-text"></span> &nbsp
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp;Bedlam Online</a>
+                <div class="d-flex">
+                    <span class="navbar-text me-3">
+                        Player:&nbsp;<span data-bind="text: userName"></span>
+                    </span>
+                    <span class="navbar-text">
+                        In Lobby:&nbsp;<span data-bind="text: myLobbyData().id"></span>
+                    </span>
                 </div>
             </div>
         </nav>
         <div class="container-fluid">
             <ul class="nav nav-tabs">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#lobbies-tab" data-bs-toggle="tab">Lobbies</a>
+                    <a class="nav-link active" href="#lobbies-tab" data-bs-toggle="tab">Lobbies</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#gameplay-tab" data-bs-toggle="tab">Play Bedlam!</a>
@@ -48,7 +48,7 @@
             <div class="tab-content">
                                 
                 <!-- Lobbies Tab -->
-                <div class="tab-pane fade active" id="lobbies-tab">
+                <div class="tab-pane fade show active" id="lobbies-tab">
                     <div class="row" id="lobbies">
                         <div class="col-md-4">
                             <div data-bind="foreach: lobbies">
@@ -97,9 +97,7 @@
                                 </ul>
                             </div>
                             <div class="card-footer">
-                                <strong>Players</strong>&nbsp (<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
-          
-                                <!-- <button class="btn btn-success" data-bind="visible: myLobbyData().players().length > 3 && (! $root.questionCard() || $root.questionCard() == ''), click: $root.getCards">Start Game</button> -->
+                                <strong>Players</strong>&nbsp;(<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
                             </div>
                         </div>
                     </div>
@@ -145,7 +143,7 @@
                 </div>
                
                 <!-- Diags Tab -->
-                <div class="tab-pane fade active" id="diags-tab">
+                <div class="tab-pane fade" id="diags-tab">
                     <div class="row" id="diags">
                         <pre data-bind="text: ko.toJSON($root, null, 2)"></pre>
                     </div>
@@ -325,14 +323,15 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data == "ERR: /Cards Not authed") {
-                                // This shouldn't happen and is indicative of someone trying to hack the game or there is an old token Being used and the game has restarted since. 
+                                 // This shouldn't happen and is indicative of someone trying to hack the game or there is an old token Being used and the game has restarted since. 
                                 lvm.cycling = false;
-                                localStorage["lvm"] = null;
+                                localStorage.removeItem("lvm");
 
-                                if(localStorage["logoutdisplayed"] = false)
+                                if(!localStorage.getItem("logoutdisplayed"))
+                                {
                                     alert("Hmm! Error! -> You have been logged out, please refresh the page and try again");
-                                
-                                    localStorage["logoutdisplayed"] = true;
+                                    localStorage.setItem("logoutdisplayed", "true");
+                                }
                             }
                             else {
                                 console.log("Setting Q+A Cards Received");
