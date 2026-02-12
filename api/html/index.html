@@ -407,6 +407,7 @@
                         .then(response => response.text())
                         .then(data => {
                             self.token(data.replace("\"", "").replace("\"", ""));
+                            self.previousRoundNumber = 0; // Reset for new lobby
                             self.loadLobby(data.replace("\"", "").replace("\"", ""));
                             
                             // Switch to Play Bedlam tab and make it prominent
