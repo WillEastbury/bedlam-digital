@@ -111,7 +111,7 @@
                 <li class="nav-item">
                     <a class="nav-link" id="play-bedlam-tab" href="#gameplay-tab" data-bs-toggle="tab">
                         Play Bedlam!
-                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;" aria-label="New feature available">NEW</span>
+                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;">NEW</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -385,12 +385,12 @@
                             
                             // Switch to Play Bedlam tab and make it prominent
                             const TAB_SWITCH_DELAY_MS = 500; // Delay to ensure lobby data is loaded
-                            setTimeout(function() {
-                                var playTab = document.getElementById('play-bedlam-tab');
-                                var playBadge = document.getElementById('play-bedlam-badge');
+                            setTimeout(() => {
+                                const playTab = document.getElementById('play-bedlam-tab');
+                                const playBadge = document.getElementById('play-bedlam-badge');
                                 if (playTab) {
                                     // Activate the Play Bedlam tab using Bootstrap Tab API
-                                    var tab = new bootstrap.Tab(playTab);
+                                    const tab = new bootstrap.Tab(playTab);
                                     tab.show();
                                     // Add pulsing animation class
                                     playTab.classList.add('play-bedlam-active');
@@ -492,10 +492,10 @@
             
             // Add visual prominence to Play Bedlam tab if user is in a lobby
             function updatePlayBedlamTabState() {
-                var playTab = document.getElementById('play-bedlam-tab');
-                var playBadge = document.getElementById('play-bedlam-badge');
+                const playTab = document.getElementById('play-bedlam-tab');
+                const playBadge = document.getElementById('play-bedlam-badge');
                 
-                if (lvm.myLobbyData().id() !== null) {
+                if (lvm.myLobbyData() && lvm.myLobbyData().id() !== null) {
                     if (playTab && !playTab.classList.contains('play-bedlam-active')) {
                         playTab.classList.add('play-bedlam-active');
                         if (playBadge) {
@@ -514,7 +514,7 @@
             
             setInterval(function () {
                 lvm.loadLobbies();
-                if (lvm.myLobbyData().id() !== null) {
+                if (lvm.myLobbyData() && lvm.myLobbyData().id() !== null) {
                     lvm.loadLobby(lvm.token());
                     lvm.getCards();
                     lvm.getPlayedCards();
