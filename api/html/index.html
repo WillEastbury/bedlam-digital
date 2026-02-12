@@ -512,6 +512,14 @@
                 }
             }
             
+            // Warn before navigate away/refresh when in an active game (issue #7)
+            window.addEventListener('beforeunload', function (e) {
+                if (lvm.token() && lvm.token() !== '') {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
             setInterval(function () {
                 lvm.loadLobbies();
                 if (lvm.myLobbyData() && lvm.myLobbyData().id() !== null) {
