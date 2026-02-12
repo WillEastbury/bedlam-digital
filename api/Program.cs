@@ -70,7 +70,8 @@ async Task<IResult> ServeCachedFile(string filePath, string contentType, string 
         fileContent = await File.ReadAllBytesAsync(fullPath);
         cache.Set(cacheKey, fileContent, new MemoryCacheEntryOptions
         {
-            Priority = CacheItemPriority.NeverRemove
+            Priority = CacheItemPriority.High,
+            SlidingExpiration = TimeSpan.FromHours(1)
         });
     }
     return Results.Bytes(fileContent, contentType);
@@ -82,12 +83,22 @@ async Task<IResult> ServeCachedFile(string filePath, string contentType, string 
 // GET => Serve static CSS files with caching
 app.MapGet("/css/{fileName}", async (string fileName) =>
 {
+    // Validate filename to prevent path traversal
+    if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+    {
+        return Results.BadRequest("Invalid filename");
+    }
     return await ServeCachedFile($"wwwroot/css/{fileName}", "text/css", $"css-{fileName}");
 });
 
 // GET => Serve static JS files with caching
 app.MapGet("/js/{fileName}", async (string fileName) =>
 {
+    // Validate filename to prevent path traversal
+    if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+    {
+        return Results.BadRequest("Invalid filename");
+    }
     return await ServeCachedFile($"wwwroot/js/{fileName}", "application/javascript", $"js-{fileName}");
 });
 
@@ -101,7 +112,8 @@ app.MapGet("/", async () =>
         htmlContent = await File.ReadAllBytesAsync(filePath);
         cache.Set("index-html", htmlContent, new MemoryCacheEntryOptions
         {
-            Priority = CacheItemPriority.NeverRemove
+            Priority = CacheItemPriority.High,
+            SlidingExpiration = TimeSpan.FromHours(1)
         });
     }
     return Results.Bytes(htmlContent, "text/html");
