@@ -57,6 +57,15 @@ var names = new List<string>() {
 var app = builder.Build();
 var cache = app.Services.GetRequiredService<IMemoryCache>();
 
+// Helper function to validate filename for security
+bool IsValidFileName(string fileName)
+{
+    return !string.IsNullOrEmpty(fileName) && 
+           !fileName.Contains("..") && 
+           !fileName.Contains("/") && 
+           !fileName.Contains("\\");
+}
+
 // Helper function to serve cached static files
 async Task<IResult> ServeCachedFile(string filePath, string contentType, string cacheKey)
 {
@@ -83,8 +92,7 @@ async Task<IResult> ServeCachedFile(string filePath, string contentType, string 
 // GET => Serve static CSS files with caching
 app.MapGet("/css/{fileName}", async (string fileName) =>
 {
-    // Validate filename to prevent path traversal
-    if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+    if (!IsValidFileName(fileName))
     {
         return Results.BadRequest("Invalid filename");
     }
@@ -94,8 +102,7 @@ app.MapGet("/css/{fileName}", async (string fileName) =>
 // GET => Serve static JS files with caching
 app.MapGet("/js/{fileName}", async (string fileName) =>
 {
-    // Validate filename to prevent path traversal
-    if (string.IsNullOrEmpty(fileName) || fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+    if (!IsValidFileName(fileName))
     {
         return Results.BadRequest("Invalid filename");
     }
