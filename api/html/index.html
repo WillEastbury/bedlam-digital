@@ -17,6 +17,57 @@
                 height: 100%;
                 object-fit: cover;
             }
+            
+            /* Mobile-first responsive styles */
+            @media (max-width: 767px) {
+                /* Reduce navbar text size on mobile */
+                .navbar-text {
+                    font-size: 0.85rem;
+                }
+                
+                /* Stack navbar items vertically on small screens */
+                .navbar .d-flex {
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                }
+                
+                /* Add spacing between navbar items */
+                .navbar-text {
+                    margin-bottom: 0.25rem;
+                }
+                
+                /* Improve card spacing on mobile */
+                .card {
+                    margin-bottom: 1rem;
+                }
+                
+                /* Improve button sizing on mobile - only for primary action buttons */
+                .card-body .btn, .row .btn {
+                    width: 100%;
+                    margin-top: 0.5rem;
+                }
+                
+                /* Better tab spacing */
+                .nav-tabs {
+                    flex-wrap: wrap;
+                }
+                
+                .nav-item {
+                    margin-bottom: 0.25rem;
+                }
+                
+                /* Improve list readability in card bodies */
+                .card-body ul {
+                    padding-left: 1rem;
+                }
+            }
+            
+            /* Tablet and up */
+            @media (min-width: 768px) {
+                .card-body .btn, .row .btn {
+                    width: auto;
+                }
+            }
         </style>
     </head>
     <body>
@@ -50,7 +101,7 @@
                 <!-- Lobbies Tab -->
                 <div class="tab-pane fade show active" id="lobbies-tab">
                     <div class="row" id="lobbies">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <div data-bind="foreach: lobbies">
                                 <div class="card">
                                     <div class="card-header bg-primary text-light">
@@ -103,22 +154,22 @@
                     </div>
                     <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound() && !$root.amITheJudge())">
                         <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                        <div class="col-md-2">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                             <img class="img-fluid" data-bind="attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
                         <!-- ko foreach: answerCards -->
-                            <div class="col-md-2">
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
                                 <img class="img-fluid grid-image" data-bind="click: $root.playCard, attr: {src: '/Card/' + $data}" />
                             </div>
                         <!-- /ko -->
                     </div>
                     <div class="row" id="judging" data-bind="visible: $root.amITheJudge">
                         <h3>Judging round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                        <div class="col-md-2">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                             <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
                         <!-- ko foreach: playedCards -->
-                            <div class="col-md-2">
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
                                 <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
                             </div>
                         <!-- /ko -->
@@ -126,17 +177,17 @@
                     </div>
                     <div class="row" id="viewing" data-bind="visible: ($root.iHavePlayedThisRound() && !$root.amITheJudge())">
                         <h3>Viewing Played Cards for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
-                        <div class="col-md-2">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                             <img class="img-fluid" data-bind=" attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
                         <!-- ko foreach: playedCards -->
-                            <div class="col-md-2">
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
                                 <img class="img-fluid grid-image" data-bind="click: $root.judgeCard, attr: {src: '/Card/' + $data}" />
                             </div>
                         <!-- /ko -->
                     </div>
                     <div class="row" id="lobbydata" data-bind="foreach: myLobbyData().lobbyHistory()">
-                        <div class="col-md-1">
+                        <div class="col-4 col-sm-3 col-md-2 col-lg-1 mb-2">
                             <img class="img-fluid grid-image" data-bind=" attr: {src: '/Card/' + $data}" />
                         </div>
                     </div>

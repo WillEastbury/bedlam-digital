@@ -1,0 +1,7 @@
+# Build artifacts
+api/bin/
+api/obj/
+
+# Temporary files
+*.log
+*.tmp
