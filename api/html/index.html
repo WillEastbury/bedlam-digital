@@ -68,6 +68,25 @@
                     width: auto;
                 }
             }
+            
+            /* Pulsing animation for Play Bedlam tab when in lobby */
+            @keyframes pulse-glow {
+                0%, 100% {
+                    box-shadow: 0 0 5px rgba(13, 202, 240, 0.5);
+                    transform: scale(1);
+                }
+                50% {
+                    box-shadow: 0 0 20px rgba(13, 202, 240, 0.8);
+                    transform: scale(1.05);
+                }
+            }
+            
+            .nav-link.play-bedlam-active {
+                animation: pulse-glow 2s infinite;
+                background-color: rgba(13, 202, 240, 0.2) !important;
+                font-weight: bold;
+                border: 2px solid #0dcaf0;
+            }
         </style>
     </head>
     <body>
@@ -90,7 +109,10 @@
                     <a class="nav-link active" href="#lobbies-tab" data-bs-toggle="tab">Lobbies</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#gameplay-tab" data-bs-toggle="tab">Play Bedlam!</a>
+                    <a class="nav-link" id="play-bedlam-tab" href="#gameplay-tab" data-bs-toggle="tab">
+                        Play Bedlam!
+                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;">NEW</span>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#diags-tab" data-bs-toggle="tab">Game Diagnostics</a>
@@ -360,6 +382,22 @@
                         .then(data => {
                             self.token(data.replace("\"", "").replace("\"", ""));
                             self.loadLobby(data.replace("\"", "").replace("\"", ""));
+                            
+                            // Switch to Play Bedlam tab and make it prominent
+                            setTimeout(function() {
+                                var playTab = document.getElementById('play-bedlam-tab');
+                                var playBadge = document.getElementById('play-bedlam-badge');
+                                if (playTab) {
+                                    // Activate the Play Bedlam tab
+                                    playTab.click();
+                                    // Add pulsing animation class
+                                    playTab.classList.add('play-bedlam-active');
+                                    // Show badge
+                                    if (playBadge) {
+                                        playBadge.style.display = 'inline';
+                                    }
+                                }
+                            }, 500);
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -449,6 +487,29 @@
                 };
             };
             ko.applyBindings(lvm);
+            
+            // Add visual prominence to Play Bedlam tab if user is in a lobby
+            function updatePlayBedlamTabState() {
+                var playTab = document.getElementById('play-bedlam-tab');
+                var playBadge = document.getElementById('play-bedlam-badge');
+                
+                if (lvm.myLobbyData().id() != null) {
+                    if (playTab && !playTab.classList.contains('play-bedlam-active')) {
+                        playTab.classList.add('play-bedlam-active');
+                        if (playBadge) {
+                            playBadge.style.display = 'inline';
+                        }
+                    }
+                } else {
+                    if (playTab && playTab.classList.contains('play-bedlam-active')) {
+                        playTab.classList.remove('play-bedlam-active');
+                        if (playBadge) {
+                            playBadge.style.display = 'none';
+                        }
+                    }
+                }
+            }
+            
             setInterval(function () {
                 lvm.loadLobbies();
                 if (lvm.myLobbyData().id() != null) {
@@ -456,6 +517,7 @@
                     lvm.getCards();
                     lvm.getPlayedCards();
                 }
+                updatePlayBedlamTabState();
             }, 1000);
         </script>
     </body>
