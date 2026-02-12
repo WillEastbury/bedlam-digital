@@ -338,6 +338,9 @@
                         .then(response => response.json())
                         .then(data => {
 
+                            // Store previous round number to detect game start
+                            var previousRoundNumber = self.myLobbyData().roundNumber();
+
                             // If the round number just changed then the judge just voted and we need to clear the played cards
                             if (self.myLobbyData().roundNumber() != data.roundNumber) {
                                 self.myLobbyData().players([]);
@@ -355,6 +358,23 @@
                             {
                                 self.myLobbyData().lobbyHistory.push(cardH);
                             });
+
+                            // Detect game start: when round transitions from 1 to 2+, switch to Play Bedlam tab
+                            if (previousRoundNumber === 1 && data.roundNumber > 1) {
+                                const playTab = document.getElementById('play-bedlam-tab');
+                                const playBadge = document.getElementById('play-bedlam-badge');
+                                if (playTab) {
+                                    // Activate the Play Bedlam tab using Bootstrap Tab API
+                                    const tab = new bootstrap.Tab(playTab);
+                                    tab.show();
+                                    // Add pulsing animation class
+                                    playTab.classList.add('play-bedlam-active');
+                                    // Show badge
+                                    if (playBadge) {
+                                        playBadge.style.display = 'inline';
+                                    }
+                                }
+                            }
 
                             // If this is the 10th round then the game is over and WE NEED TO popup a message
                             if (data.roundNumber > 12) {
