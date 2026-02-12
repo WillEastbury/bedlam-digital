@@ -111,7 +111,7 @@
                 <li class="nav-item">
                     <a class="nav-link" id="play-bedlam-tab" href="#gameplay-tab" data-bs-toggle="tab">
                         Play Bedlam!
-                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;">NEW</span>
+                        <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;" role="status" aria-label="New feature available">NEW</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -384,6 +384,7 @@
                             self.loadLobby(data.replace("\"", "").replace("\"", ""));
                             
                             // Switch to Play Bedlam tab and make it prominent
+                            const TAB_SWITCH_DELAY_MS = 500; // Delay to ensure lobby data is loaded
                             setTimeout(function() {
                                 var playTab = document.getElementById('play-bedlam-tab');
                                 var playBadge = document.getElementById('play-bedlam-badge');
@@ -397,7 +398,7 @@
                                         playBadge.style.display = 'inline';
                                     }
                                 }
-                            }, 500);
+                            }, TAB_SWITCH_DELAY_MS);
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -493,7 +494,7 @@
                 var playTab = document.getElementById('play-bedlam-tab');
                 var playBadge = document.getElementById('play-bedlam-badge');
                 
-                if (lvm.myLobbyData().id() != null) {
+                if (lvm.myLobbyData().id() !== null) {
                     if (playTab && !playTab.classList.contains('play-bedlam-active')) {
                         playTab.classList.add('play-bedlam-active');
                         if (playBadge) {
@@ -512,7 +513,7 @@
             
             setInterval(function () {
                 lvm.loadLobbies();
-                if (lvm.myLobbyData().id() != null) {
+                if (lvm.myLobbyData().id() !== null) {
                     lvm.loadLobby(lvm.token());
                     lvm.getCards();
                     lvm.getPlayedCards();
