@@ -41,8 +41,8 @@
                     margin-bottom: 1rem;
                 }
                 
-                /* Improve button sizing on mobile */
-                .btn {
+                /* Improve button sizing on mobile - only for primary action buttons */
+                .card-body .btn, .row .btn {
                     width: 100%;
                     margin-top: 0.5rem;
                 }
@@ -56,15 +56,15 @@
                     margin-bottom: 0.25rem;
                 }
                 
-                /* Improve list readability */
-                ul {
+                /* Improve list readability in card bodies */
+                .card-body ul {
                     padding-left: 1rem;
                 }
             }
             
             /* Tablet and up */
             @media (min-width: 768px) {
-                .btn {
+                .card-body .btn, .row .btn {
                     width: auto;
                 }
             }
