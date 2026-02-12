@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "iSMqLmy1RFh6IllXxvuKuixobGFzmbxxgUuOvoRpyB9ZEcUDB/Ur3w4fSWzUCsu3uMRS3do4gnQjGEJmyaU2VA==",
+  "dgSpecHash": "3LdrTMVDCso=",
   "success": true,
-  "projectFilePath": "C:\\Source\\Bedlam\\bedlam\\api\\api.csproj",
+  "projectFilePath": "/home/runner/work/bedlam-digital/bedlam-digital/api/api.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.6.0\\microsoft.identitymodel.abstractions.7.6.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.6.0\\microsoft.identitymodel.jsonwebtokens.7.6.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.logging\\7.6.0\\microsoft.identitymodel.logging.7.6.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.6.0\\microsoft.identitymodel.tokens.7.6.0.nupkg.sha512",
-    "C:\\Users\\wieastbu\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.6.0\\system.identitymodel.tokens.jwt.7.6.0.nupkg.sha512"
+    "/home/runner/.nuget/packages/microsoft.identitymodel.abstractions/7.7.1/microsoft.identitymodel.abstractions.7.7.1.nupkg.sha512",
+    "/home/runner/.nuget/packages/microsoft.identitymodel.jsonwebtokens/7.7.1/microsoft.identitymodel.jsonwebtokens.7.7.1.nupkg.sha512",
+    "/home/runner/.nuget/packages/microsoft.identitymodel.logging/7.7.1/microsoft.identitymodel.logging.7.7.1.nupkg.sha512",
+    "/home/runner/.nuget/packages/microsoft.identitymodel.tokens/7.7.1/microsoft.identitymodel.tokens.7.7.1.nupkg.sha512",
+    "/home/runner/.nuget/packages/system.identitymodel.tokens.jwt/7.7.1/system.identitymodel.tokens.jwt.7.7.1.nupkg.sha512"
   ],
   "logs": []
 }

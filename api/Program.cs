@@ -1,9 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Concurrent;
 
 var builder = WebApplication.CreateBuilder(args);
-var players = new List<Player>();
-var lobbies = new List<Lobby>();
+var players = new ConcurrentBag<Player>();
+var lobbies = new ConcurrentBag<Lobby>();
+var lobbiesLock = new object();
+var playersLock = new object();
 var names = new List<string>() {
     
     "Janus (Windows 3.1 and MSDOS 5)", 
@@ -67,9 +70,15 @@ app.MapGet("/Restart", () =>
 {
     Console.WriteLine(".Restart Request Received");
 
-    // Clear all lobbies and players
-    lobbies.Clear();
-    players.Clear();
+    // Clear all lobbies and players with proper locking
+    lock (lobbiesLock)
+    {
+        lock (playersLock)
+        {
+            lobbies = new ConcurrentBag<Lobby>();
+            players = new ConcurrentBag<Player>();
+        }
+    }
 
     return Results.Ok("Game Engine Restarted!");
 });
@@ -85,23 +94,43 @@ app.MapGet("/Card/{CardId}", (string CardId) =>
 app.MapGet("/Lobbies", () =>
 {
     Console.Write("L");
-    CreateAndAddNewLobbiesIfNoSpace();
-    return Results.Ok(lobbies.Select(e => new LobbyDto(e)).ToList());
+    lock (lobbiesLock)
+    {
+        CreateAndAddNewLobbiesIfNoSpace();
+        return Results.Ok(lobbies.Select(e => new LobbyDto(e)).ToList());
+    }
 });
 
 // GET /Login/{LobbyId}{PlayerName} => Creates a new player, joins a lobby (if one does not exist with the correct number of players one is created) and returns a JWT token
 app.MapGet("/Login/{lobbyId}/{playerName}", (string playerName, string lobbyId) =>
 {
     Console.Write("U");
-    if (players.FirstOrDefault(p => p.Name == playerName) != null) return Results.Conflict("Player name already exists.");
-    var player = new Player(playerName);
-    players.Add(player);
-    Lobby lobby = CheckAndGetLobby(lobbyId);
-    player.Cards = lobby.AnswerDeck.Take(Lobby.CardsDealtPerPlayer).ToList();
-    foreach (var card in player.Cards) lobby.AnswerDeck.Remove(card);
-    lobby.AddPlayer(player);
-    player.Token = player.GenerateJwtToken(player.Id, player.Name, lobby.Id);
-    return Results.Ok(player.Token);
+    
+    lock (playersLock)
+    {
+        if (players.FirstOrDefault(p => p.Name == playerName) != null) 
+            return Results.Conflict("Player name already exists.");
+        
+        var player = new Player(playerName);
+        players = new ConcurrentBag<Player>(players) { player };
+        
+        lock (lobbiesLock)
+        {
+            Lobby lobby = CheckAndGetLobby(lobbyId);
+            
+            // Deal cards atomically within the lobby lock
+            lock (lobby.DeckLock)
+            {
+                player.Cards = lobby.AnswerDeck.Take(Lobby.CardsDealtPerPlayer).ToList();
+                foreach (var card in player.Cards) 
+                    lobby.AnswerDeck.Remove(card);
+            }
+            
+            lobby.AddPlayer(player);
+            player.Token = player.GenerateJwtToken(player.Id, player.Name, lobby.Id);
+            return Results.Ok(player.Token);
+        }
+    }
 });
 
 // GET /MyLobby => Returns the content of the lobby with the specified id via a dto to mask keys etc.
@@ -315,38 +344,40 @@ bool SetAuth(HttpContext context, string Claim = null, string Value = null)
 }
 void CreateAndAddNewLobbiesIfNoSpace()
 {
+    // Must be called within lobbiesLock
     Lobby lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
     
     // If there are no lobbies available, create one 
     if (lobby == null)
     {
         lobby = new Lobby(GetRandomName());
-        lobbies.Add(lobby);
+        lobbies = new ConcurrentBag<Lobby>(lobbies) { lobby };
 
         lobby = new Lobby(GetRandomName());
-        lobbies.Add(lobby);
+        lobbies = new ConcurrentBag<Lobby>(lobbies) { lobby };
 
         lobby = new Lobby(GetRandomName());
-        lobbies.Add(lobby);
+        lobbies = new ConcurrentBag<Lobby>(lobbies) { lobby };
 
         Console.WriteLine("Created new lobby: " + lobby.Id);
     }
 }
 Lobby CheckAndGetLobby(string lobbyId)
 {
+    // Must be called within lobbiesLock
     // Join the player to their requested lobby if it's not started or full
     Lobby lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
 
     if (lobby == null)
     {
         Console.WriteLine("WRN: Requested Lobby not found or full");
-        lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+        lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
 
         if (lobby == null)
         {
             Console.WriteLine("No free lobbies found, creating some more.");
             CreateAndAddNewLobbiesIfNoSpace();
-            lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+            lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
         }
     }
 
