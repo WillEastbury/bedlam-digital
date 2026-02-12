@@ -359,12 +359,14 @@
 
                             // Detect game start or joining mid-game: switch to Play Bedlam tab if game is active
                             // Trigger on: round 1→2+ transition (game start) OR first poll when round is already 2+ (join mid-game)
-                            if ((self.previousRoundNumber === 1 && data.roundNumber > 1) || 
-                                (self.previousRoundNumber === 0 && data.roundNumber > 1)) {
+                            if ((self.previousRoundNumber === 0 || self.previousRoundNumber === 1) && data.roundNumber > 1) {
                                 const playTab = document.getElementById('play-bedlam-tab');
                                 const playBadge = document.getElementById('play-bedlam-badge');
-                                // Only switch if not already on the Play Bedlam tab
-                                if (playTab && !playTab.classList.contains('active')) {
+                                
+                                if (!playTab) {
+                                    console.warn('Play Bedlam tab element not found - cannot auto-switch');
+                                } else if (!playTab.classList.contains('active')) {
+                                    // Only switch if not already on the Play Bedlam tab
                                     // Activate the Play Bedlam tab using Bootstrap Tab API
                                     const tab = new bootstrap.Tab(playTab);
                                     tab.show();
