@@ -290,7 +290,7 @@
                 self.questionCard = ko.observable("");
                 self.answerCards = ko.observableArray([]);
                 self.playedCards = ko.observableArray([]);
-                self.previousRoundNumber = 0; // Track previous round for game start detection
+                self.previousRoundNumber = 0; // Track previous round for game start detection (0 = no previous round, games start at round 1)
 
                 self.RoundPlayedIndex = ko.computed(function(){
                     return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != ''))
@@ -358,7 +358,7 @@
                             });
 
                             // Detect game start: when round transitions from 1 to 2+, switch to Play Bedlam tab
-                            if (self.previousRoundNumber == 1 && data.roundNumber > 1) {
+                            if (self.previousRoundNumber === 1 && data.roundNumber > 1) {
                                 const playTab = document.getElementById('play-bedlam-tab');
                                 const playBadge = document.getElementById('play-bedlam-badge');
                                 if (playTab) {
