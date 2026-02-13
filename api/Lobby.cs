@@ -16,6 +16,7 @@ public class Lobby
     public List<string> AnswerDeck { get; private set;}
     public List<string> PlayedCards { get; private set;} = new List<string>();
     public List<ChatMessage> ChatMessages { get; private set;} = new List<ChatMessage>();
+    public int SpectatorCount { get; set; } = 0;
     public Dictionary<string,string> LobbyHistory {get;set;} = new();
     public int RoundNumber {get; set;} = 1;
     public int JudgeIndex { get; set;}

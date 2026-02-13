@@ -163,6 +163,23 @@ app.MapGet("/GameHistory", () =>
     return Results.Ok(Lobby.GetGameHistory());
 });
 
+// GET /Spectate/{lobbyId} => Spectate a lobby without auth
+app.MapGet("/Spectate/{lobbyId}", (string lobbyId) =>
+{
+    var lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId);
+    if (lobby == null) return Results.NotFound("Lobby not found");
+    lobby.SpectatorCount++;
+    return Results.Ok(new
+    {
+        id = lobby.Id,
+        roundNumber = lobby.RoundNumber,
+        questionCard = lobby.RoundNumber > 0 ? lobby.CurrentQuestionCard : "",
+        players = lobby.Players.Select(p => new { p.Name, p.Score }).ToList(),
+        playedCards = lobby.RoundNumber > 1 ? lobby.PlayedCards : new List<string>(),
+        spectatorCount = lobby.SpectatorCount
+    });
+});
+
 // GET /Lobbies => Returns a list of all lobbies
 app.MapGet("/Lobbies", () =>
 {

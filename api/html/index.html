@@ -269,6 +269,9 @@
                                         <button class="btn btn-success mt-3" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1) && !isLocked(), click: $root.joinLobby">
                                             🚀 Join Lobby
                                         </button>
+                                        <button class="btn btn-outline-info btn-sm mt-2" data-bind="visible: roundNumber() > 1, click: function() { $root.spectate(id()); }">
+                                            👁 Watch
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -394,6 +397,32 @@
                             </tbody>
                         </table>
                         <p data-bind="visible: gameHistory().length === 0" class="text-muted">No completed games yet.</p>
+                    </div>
+                </div>
+
+                <!-- Spectator View -->
+                <div data-bind="if: spectatorData()" class="card mt-3">
+                    <div class="card-header bg-info text-dark d-flex justify-content-between align-items-center">
+                        <span>👁 Spectating: <span data-bind="text: spectatorData().id"></span></span>
+                        <button class="btn btn-sm btn-outline-dark" data-bind="click: function(){ spectatorData(null); }">✕ Close</button>
+                    </div>
+                    <div class="card-body">
+                        <p>Round: <span data-bind="text: spectatorData().roundNumber"></span> | Spectators: <span data-bind="text: spectatorData().spectatorCount"></span></p>
+                        <!-- ko if: spectatorData().questionCard -->
+                        <div class="mb-2"><img class="img-fluid" style="max-width:120px;" data-bind="attr: {src: '/Card/' + spectatorData().questionCard}"></div>
+                        <!-- /ko -->
+                        <h6>Scoreboard</h6>
+                        <!-- ko foreach: spectatorData().players -->
+                        <div class="scoreboard-item"><span data-bind="text: name"></span> <span class="badge bg-secondary" data-bind="text: score"></span></div>
+                        <!-- /ko -->
+                        <!-- ko if: spectatorData().playedCards && spectatorData().playedCards.length > 0 -->
+                        <h6 class="mt-2">Played Cards</h6>
+                        <div class="d-flex flex-wrap">
+                            <!-- ko foreach: spectatorData().playedCards -->
+                            <img class="img-fluid me-1 mb-1" style="max-width:80px;" data-bind="attr: {src: '/Card/' + $data}">
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
                     </div>
                 </div>
                
@@ -569,6 +598,7 @@
                 self.highScores = ko.observableArray([]);
                 self.chatMessages = ko.observableArray([]);
                 self.gameHistory = ko.observableArray([]);
+                self.spectatorData = ko.observable(null);
 
                 self.RoundPlayedIndex = ko.computed(function(){
                     return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != ''))
@@ -807,6 +837,13 @@
                         .then(response => response.json())
                         .then(data => { self.chatMessages(data); })
                         .catch(error => console.error('Chat load error:', error));
+                };
+
+                self.spectate = function (lobbyId) {
+                    fetch('/Spectate/' + lobbyId)
+                        .then(response => response.json())
+                        .then(data => { self.spectatorData(data); })
+                        .catch(error => console.error('Spectate error:', error));
                 };
             };
             ko.applyBindings(lvm);
