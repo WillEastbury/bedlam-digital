@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Bedlam</title>
-        <link rel="stylesheet" href="/css/vapor.min.css">
+        <link id="theme-css" rel="stylesheet" href="/css/vapor.min.css">
         <style>
             /* Add custom CSS styles here */
             .image-grid {
@@ -93,13 +93,20 @@
         <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#" onClick="ReloadOnCrash()">&nbsp;Bedlam Online</a>
-                <div class="d-flex">
+                <div class="d-flex align-items-center">
                     <span class="navbar-text me-3">
                         Player:&nbsp;<span data-bind="text: userName"></span>
                     </span>
-                    <span class="navbar-text">
+                    <span class="navbar-text me-3">
                         In Lobby:&nbsp;<span data-bind="text: myLobbyData().id"></span>
                     </span>
+                    <select id="theme-selector" class="form-select form-select-sm" style="width: auto;" onchange="switchTheme(this.value)">
+                        <option value="vapor">Vapor</option>
+                        <option value="darkly">Darkly</option>
+                        <option value="cyborg">Cyborg</option>
+                        <option value="slate">Slate</option>
+                        <option value="solar">Solar</option>
+                    </select>
                 </div>
             </div>
         </nav>
@@ -538,6 +545,20 @@
                 }
                 updatePlayBedlamTabState();
             }, 1000);
+
+            // Theme switcher (issue #17)
+            function switchTheme(theme) {
+                document.getElementById('theme-css').href = '/css/' + theme + '.min.css';
+                localStorage.setItem('bedlam-theme', theme);
+            }
+            // Restore saved theme on load
+            (function() {
+                var saved = localStorage.getItem('bedlam-theme');
+                if (saved) {
+                    document.getElementById('theme-css').href = '/css/' + saved + '.min.css';
+                    document.getElementById('theme-selector').value = saved;
+                }
+            })();
         </script>
     </body>
 </html>

@@ -9,3 +9,5 @@ api/obj/
 # Node modules
 api/node_modules/
 api/package-lock.json
+api/publish/
+api/.azure/
