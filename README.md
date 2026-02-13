@@ -8,6 +8,8 @@ You can buy box sets of the original core game and any of the three (as of March
 
 Or we are creating a digital version as promised to KC Lemson on a distant yammer? (now Viva Engage) thread, the idea is to be able to play this remotely as a team and have some fun during a virtual offsite !
 
+**🎮 [Play the dev instance now!](https://bedlamdigital.azurewebsites.net)**
+
 **How To Play (minimum 4 players)**
 1.	Join a Virtual Lobby 
 2.	System Deals each player in the lobby 10 white cards.
