@@ -15,6 +15,7 @@ public class LobbyDto
     public List<PlayerInfoDto> Players { get; set; }
     // public List<string> PlayedCards { get; set; }
     public int RoundNumber { get; set; }
+    public bool IsLocked { get; set; }
     // public int JudgeIndex { get; set; }
 
     public LobbyDto(Lobby lobby)
@@ -23,6 +24,7 @@ public class LobbyDto
         Players = lobby.Players.Select(player => new PlayerInfoDto(player)).ToList();
         // PlayedCards = lobby.PlayedCards;
         RoundNumber = lobby.RoundNumber;
+        IsLocked = lobby.IsLocked;
         // JudgeIndex = lobby.JudgeIndex;
         LobbyHistory = lobby.LobbyHistory;
     }

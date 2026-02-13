@@ -14,6 +14,7 @@ public class Lobby
     public int RoundNumber {get; set;} = 1;
     public int JudgeIndex { get; set;}
     public string CurrentQuestionCard => QuestionDeck[RoundNumber];
+    public bool IsLocked { get; set; } = false;
     public object DeckLock { get; } = new object();
     public object PlayersLock { get; } = new object();
     public object StateLock { get; } = new object();
@@ -53,6 +54,9 @@ public class Lobby
             // Add the card to the played cards
             PlayedCards.Add(cardUrl);
             
+            // Lock the lobby once a card is played
+            if (!IsLocked) IsLocked = true;
+
             // set the lastplayed card for the player
             player.LastPlayedCard = cardUrl;
             return true;

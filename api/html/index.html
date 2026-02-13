@@ -248,6 +248,7 @@
                                             <span class="badge bg-light text-dark"><span data-bind="text: players().length"></span>/8</span>
                                             <span data-bind="visible: players().length == 8" class="badge bg-danger">Full</span>
                                             <span data-bind="visible: roundNumber() > 1" class="badge bg-warning text-dark">In Progress</span>
+                                            <span data-bind="visible: isLocked()" class="badge bg-danger">🔒 Locked</span>
                                         </span>
                                     </div>
                                     <div class="card-body">
@@ -260,7 +261,7 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <button class="btn btn-success mt-3" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1), click: $root.joinLobby">
+                                        <button class="btn btn-success mt-3" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1) && !isLocked(), click: $root.joinLobby">
                                             🚀 Join Lobby
                                         </button>
                                     </div>
@@ -394,7 +395,7 @@
                         });
                         lvm.lobbies([]);
                         (lvmObj.lobbies || []).forEach(function (lobby) {
-                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, lobby.lobbyHistory));
+                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, lobby.lobbyHistory, lobby.isLocked));
                         });
                         console.log("Auto-rejoin complete:", lvmObj);
                     } catch (e) {
@@ -404,14 +405,15 @@
                 }
             }
             // Declare a lobby with constructor to hold the lobby information
-            function Lobby(id, players, playedCards, roundNumber, judgeIndex, lobbyHistory) {
+            function Lobby(id, players, playedCards, roundNumber, judgeIndex, lobbyHistory, isLocked) {
                 return {
                     id: ko.observable(id),
                     players: ko.observableArray(players),
                     playedCards: ko.observableArray(playedCards),
                     roundNumber: ko.observable(roundNumber),
                     judgeIndex: ko.observable(judgeIndex),
-                    lobbyHistory: ko.observableArray(lobbyHistory)
+                    lobbyHistory: ko.observableArray(lobbyHistory),
+                    isLocked: ko.observable(isLocked || false)
                 };
             }
 
@@ -461,7 +463,7 @@
                                 {
                                     lh.push(cardH);
                                 });
-                                var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, lh);
+                                var newLobby = Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, lh, lobby.isLocked);
                                 self.lobbies.push(newLobby);
                             });
                         })

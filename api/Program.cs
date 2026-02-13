@@ -406,7 +406,7 @@ bool SetAuth(HttpContext context, string Claim = null, string Value = null)
 void CreateAndAddNewLobbiesIfNoSpace()
 {
     // Must be called within lobbiesLock
-    Lobby lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+    Lobby lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1 && !l.IsLocked);
     
     // If there are no lobbies available, create one 
     if (lobby == null)
@@ -427,18 +427,18 @@ Lobby CheckAndGetLobby(string lobbyId)
 {
     // Must be called within lobbiesLock
     // Join the player to their requested lobby if it's not started or full
-    Lobby lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+    Lobby lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId && l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1 && !l.IsLocked);
 
     if (lobby == null)
     {
         Console.WriteLine("WRN: Requested Lobby not found or full");
-        lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+        lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1 && !l.IsLocked);
 
         if (lobby == null)
         {
             Console.WriteLine("No free lobbies found, creating some more.");
             CreateAndAddNewLobbiesIfNoSpace();
-            lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1);
+            lobby = lobbies.FirstOrDefault(l => l.Players.Count < Lobby.MaxPlayers && l.RoundNumber == 1 && !l.IsLocked);
         }
     }
 

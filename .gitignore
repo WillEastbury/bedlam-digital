@@ -1,6 +1,8 @@
 # Build artifacts
 api/bin/
 api/obj/
+api.tests/bin/
+api.tests/obj/
 
 # Temporary files
 *.log
