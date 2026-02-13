@@ -157,6 +157,12 @@ app.MapGet("/HighScores", () =>
     return Results.Ok(Lobby.LoadHighScores());
 });
 
+// GET /GameHistory => Returns recent 20 completed games
+app.MapGet("/GameHistory", () =>
+{
+    return Results.Ok(Lobby.GetGameHistory());
+});
+
 // GET /Lobbies => Returns a list of all lobbies
 app.MapGet("/Lobbies", () =>
 {

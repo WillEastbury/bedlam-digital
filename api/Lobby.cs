@@ -5,6 +5,8 @@ public class Lobby
 {
     private static readonly string HighScoresFile = Path.Combine(Environment.CurrentDirectory, "highscores.json");
     private static readonly object HighScoresLock = new();
+    public static List<GameResult> GameHistory { get; } = new();
+    private static readonly object GameHistoryLock = new();
     public static int MaxPlayers = 8;
     public static int MaxRounds = 8;
     public static int CardsDealtPerPlayer = 8;
@@ -100,6 +102,7 @@ public class Lobby
                 {
                     var topPlayer = Players.OrderByDescending(p => p.Score).First();
                     SaveHighScore(new HighScore(topPlayer.Name, topPlayer.Score, DateTime.UtcNow, Id));
+                    SaveGameResult(this);
                 }
 
                 return Winner.Name + " won the round! with Card <a href='/Card/" + cardUrl + " '>this card </a>, they now have " + Winner.Score + " points!";
@@ -123,6 +126,26 @@ public class Lobby
             if (!File.Exists(HighScoresFile)) return new List<HighScore>();
             try { return JsonSerializer.Deserialize<List<HighScore>>(File.ReadAllText(HighScoresFile)) ?? new List<HighScore>(); }
             catch { return new List<HighScore>(); }
+        }
+    }
+    public static void SaveGameResult(Lobby lobby)
+    {
+        lock (GameHistoryLock)
+        {
+            GameHistory.Add(new GameResult
+            {
+                LobbyName = lobby.Id,
+                Players = lobby.Players.Select(p => new PlayerScoreEntry { Name = p.Name, Score = p.Score }).ToList(),
+                Date = DateTime.UtcNow
+            });
+            if (GameHistory.Count > 20) GameHistory.RemoveAt(0);
+        }
+    }
+    public static List<GameResult> GetGameHistory()
+    {
+        lock (GameHistoryLock)
+        {
+            return GameHistory.OrderByDescending(g => g.Date).Take(20).ToList();
         }
     }
 }
