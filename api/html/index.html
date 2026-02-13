@@ -135,6 +135,66 @@
                 color: #aaa;
                 margin-top: 1rem;
             }
+
+            /* UI polish (issue #18) */
+            .card {
+                border: none;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                transition: transform 0.2s, box-shadow 0.2s;
+                margin-bottom: 1rem;
+            }
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            }
+            .grid-image {
+                cursor: pointer;
+                transition: transform 0.15s, box-shadow 0.15s;
+                border-radius: 6px;
+            }
+            .grid-image:hover {
+                transform: scale(1.08);
+                box-shadow: 0 0 15px rgba(13, 202, 240, 0.6);
+            }
+            .nav-tabs {
+                margin-top: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            .tab-content {
+                padding-top: 0.5rem;
+            }
+            h3 {
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            .scoreboard-item {
+                padding: 0.4rem 0;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            #diags-panel {
+                max-height: 400px;
+                overflow-y: auto;
+                font-size: 0.75rem;
+            }
+            #diags-panel pre {
+                margin: 0;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+            .diags-toggle {
+                opacity: 0.6;
+                transition: opacity 0.2s;
+                font-size: 1.2rem;
+                background: none;
+                border: none;
+                color: inherit;
+                cursor: pointer;
+                padding: 0.25rem 0.5rem;
+            }
+            .diags-toggle:hover {
+                opacity: 1;
+            }
         </style>
     </head>
     <body>
@@ -148,13 +208,14 @@
                     <span class="navbar-text me-3">
                         In Lobby:&nbsp;<span data-bind="text: myLobbyData().id"></span>
                     </span>
-                    <select id="theme-selector" class="form-select form-select-sm" style="width: auto;" onchange="switchTheme(this.value)">
+                    <select id="theme-selector" class="form-select form-select-sm me-2" style="width: auto;" onchange="switchTheme(this.value)">
                         <option value="vapor">Vapor</option>
                         <option value="darkly">Darkly</option>
                         <option value="cyborg">Cyborg</option>
                         <option value="slate">Slate</option>
                         <option value="solar">Solar</option>
                     </select>
+                    <button class="diags-toggle" onclick="toggleDiags()" title="Toggle Diagnostics">⚙️</button>
                 </div>
             </div>
         </nav>
@@ -169,36 +230,39 @@
                         <span class="badge bg-danger ms-1" id="play-bedlam-badge" style="display: none;">NEW</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#diags-tab" data-bs-toggle="tab">Game Diagnostics</a>
-                </li>
             </ul>
             <div class="tab-content">
                                 
                 <!-- Lobbies Tab -->
                 <div class="tab-pane fade show active" id="lobbies-tab">
-                    <div class="row" id="lobbies">
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div data-bind="foreach: lobbies">
+                    <div class="row g-3" id="lobbies">
+                        <div data-bind="foreach: lobbies">
+                            <div class="col-12 col-md-6 col-lg-4">
                                 <div class="card">
-                                    <div class="card-header bg-primary text-light">
-                                        <p>
-                                            <strong>Lobby Codename: </strong>
-                                            <span data-bind="text: id"></span>, <strong>Players</strong>
-                                            <span data-bind="text: players().length"></span> Of 8
+                                    <div class="card-header bg-primary text-light d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <strong>🎮 </strong>
+                                            <span data-bind="text: id"></span>
+                                        </span>
+                                        <span>
+                                            <span class="badge bg-light text-dark"><span data-bind="text: players().length"></span>/8</span>
                                             <span data-bind="visible: players().length == 8" class="badge bg-danger">Full</span>
-                                            <span data-bind="visible: roundNumber() > 1" class="badge bg-danger">Started</span>
-                                        </p>
+                                            <span data-bind="visible: roundNumber() > 1" class="badge bg-warning text-dark">In Progress</span>
+                                        </span>
                                     </div>
                                     <div class="card-body">
                                         <div data-bind="foreach: players">
-                                            <ul>
-                                                <span data-bind="text: name"></span> : 
-                                                <span data-bind="text: score"></span> &nbsp
-                                                <span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span>
-                                            </ul>
+                                            <div class="scoreboard-item">
+                                                <span data-bind="text: name"></span>
+                                                <span class="float-end">
+                                                    <span class="badge bg-secondary" data-bind="text: score"></span>
+                                                    <span class="badge bg-info" data-bind="visible: name == $root.userName()">You</span>
+                                                </span>
+                                            </div>
                                         </div>
-                                        <button class="btn btn-success" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1), click: $root.joinLobby">Join</button>
+                                        <button class="btn btn-success mt-3" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1), click: $root.joinLobby">
+                                            🚀 Join Lobby
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -209,23 +273,26 @@
                 <!-- Gameplay Tab -->
                 <div class="tab-pane fade" id="gameplay-tab">
                     <div class="row" id="gameplay">
-                        <div class="card mb-4">
-                            <div class="card-header bg-primary text-light">
-                                <h5>Scoreboard for lobby: <span data-bind="text: myLobbyData().id"></span></h5>
-                            </div>
-                            <div class="card-body">
-                                <ul data-bind="foreach: myLobbyData().players">
-                                    <li>
-                                        <span data-bind="text: name"></span>:
-                                        <span data-bind="text: score"></span>
-                                        <span class="badge bg-primary" data-bind="visible: name == $root.userName()">You</span>
-                                        <span class="badge bg-warning" data-bind="visible: name == $root.roundJudgeName()">Judge</span>
-
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="card-footer">
-                                <strong>Players</strong>&nbsp;(<span data-bind="text: myLobbyData().players().length"></span> Of 8) 
+                        <div class="col-12">
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-light">
+                                    <h5 class="mb-0">🏆 Scoreboard — <span data-bind="text: myLobbyData().id"></span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div data-bind="foreach: myLobbyData().players">
+                                        <div class="scoreboard-item d-flex justify-content-between">
+                                            <span>
+                                                <span data-bind="text: name"></span>
+                                                <span class="badge bg-info ms-1" data-bind="visible: name == $root.userName()">You</span>
+                                                <span class="badge bg-warning text-dark ms-1" data-bind="visible: name == $root.roundJudgeName()">👨‍⚖️ Judge</span>
+                                            </span>
+                                            <span class="badge bg-secondary" data-bind="text: score"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <strong>Players</strong>&nbsp;(<span data-bind="text: myLobbyData().players().length"></span>/8)
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -270,9 +337,13 @@
                     </div>
                 </div>
                
-                <!-- Diags Tab -->
-                <div class="tab-pane fade" id="diags-tab">
-                    <div class="row" id="diags">
+                <!-- Diags Panel (hidden by default, toggled via gear icon) -->
+                <div id="diags-panel" class="card mt-3" style="display: none;">
+                    <div class="card-header bg-secondary text-light d-flex justify-content-between align-items-center">
+                        <span>⚙️ Game Diagnostics</span>
+                        <button class="btn btn-sm btn-outline-light" onclick="toggleDiags()">✕</button>
+                    </div>
+                    <div class="card-body">
                         <pre data-bind="text: ko.toJSON($root, null, 2)"></pre>
                     </div>
                 </div>
@@ -605,6 +676,11 @@
             function switchTheme(theme) {
                 document.getElementById('theme-css').href = '/css/' + theme + '.min.css';
                 localStorage.setItem('bedlam-theme', theme);
+            }
+            // Diagnostics toggle (issue #18)
+            function toggleDiags() {
+                var panel = document.getElementById('diags-panel');
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
             }
             // Restore saved theme on load
             (function() {
