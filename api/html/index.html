@@ -742,6 +742,17 @@
                 document.getElementById('solitaire-overlay').style.display = 'none';
                 document.getElementById('winner-banner').style.display = 'none';
             }
+            // Debug: ?testwin shows a button to trigger the victory animation
+            (function() {
+                if (new URLSearchParams(window.location.search).has('testwin')) {
+                    var btn = document.createElement('button');
+                    btn.textContent = '🎉 Test Victory';
+                    btn.className = 'btn btn-warning btn-sm';
+                    btn.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:11000;';
+                    btn.onclick = function() { startSolitaireAnimation('🎉 TestPlayer wins with 42 points! 🎉'); };
+                    document.body.appendChild(btn);
+                }
+            })();
         </script>
     </body>
 </html>
