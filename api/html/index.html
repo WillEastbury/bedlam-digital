@@ -215,6 +215,7 @@
                         <option value="slate">Slate</option>
                         <option value="solar">Solar</option>
                     </select>
+                    <button id="mute-toggle" class="diags-toggle" onclick="toggleMute()" title="Toggle Sound">🔊</button>
                     <button class="diags-toggle" onclick="toggleDiags()" title="Toggle Diagnostics">⚙️</button>
                 </div>
             </div>
@@ -374,6 +375,58 @@
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/knockout-latest.min.js"></script>
         <script>
+            // Sound effects (Web Audio API)
+            var audioCtx = null;
+            var isMuted = localStorage.getItem('bedlam-muted') === 'true';
+            function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+            function toggleMute() {
+                isMuted = !isMuted;
+                localStorage.setItem('bedlam-muted', isMuted);
+                document.getElementById('mute-toggle').textContent = isMuted ? '🔇' : '🔊';
+            }
+            (function() { if (isMuted) document.addEventListener('DOMContentLoaded', function() { var b = document.getElementById('mute-toggle'); if(b) b.textContent = '🔇'; }); })();
+            function playBeep() {
+                if (isMuted) return;
+                var ctx = getAudioCtx(), o = ctx.createOscillator(), g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.frequency.value = 660; o.type = 'square';
+                g.gain.setValueAtTime(0.15, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.15);
+            }
+            function playJoinChime() {
+                if (isMuted) return;
+                var ctx = getAudioCtx();
+                [523, 659, 784].forEach(function(freq, i) {
+                    var o = ctx.createOscillator(), g = ctx.createGain();
+                    o.connect(g); g.connect(ctx.destination);
+                    o.frequency.value = freq; o.type = 'sine';
+                    g.gain.setValueAtTime(0.12, ctx.currentTime + i*0.1);
+                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.1 + 0.2);
+                    o.start(ctx.currentTime + i*0.1); o.stop(ctx.currentTime + i*0.1 + 0.2);
+                });
+            }
+            function playJudgeVote() {
+                if (isMuted) return;
+                var ctx = getAudioCtx(), o = ctx.createOscillator(), g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.frequency.value = 880; o.type = 'triangle';
+                g.gain.setValueAtTime(0.15, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.3);
+            }
+            function playVictoryFanfare() {
+                if (isMuted) return;
+                var ctx = getAudioCtx();
+                [523, 659, 784, 1047].forEach(function(freq, i) {
+                    var o = ctx.createOscillator(), g = ctx.createGain();
+                    o.connect(g); g.connect(ctx.destination);
+                    o.frequency.value = freq; o.type = 'square';
+                    g.gain.setValueAtTime(0.12, ctx.currentTime + i*0.15);
+                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
+                    o.start(ctx.currentTime + i*0.15); o.stop(ctx.currentTime + i*0.15 + 0.3);
+                });
+            }
 
             var lvm = new GameViewModel(false);
 
@@ -527,6 +580,7 @@
                                 // Sort descending
                                 if (!popup_endgame) {
                                     startSolitaireAnimation("🎉 " + sortedPlayers[0].name + " wins with " + sortedPlayers[0].score + " points! 🎉");
+                                    playVictoryFanfare();
                                     popup_endgame = true;
                                 }
                             }
@@ -538,6 +592,7 @@
                 // GET /Login/{LobbyId} => Joins a user to the game, returns a JWT for the user to send on subsequent requests
                 self.joinLobby = function (lobby) {
                     self.userName(prompt("Please enter your name", ""));
+                    playJoinChime();
                     fetch(`/Login/${lobby.id()}/${self.userName()}`,
                         { method: 'GET' })
                         .then(response => response.text())
@@ -605,6 +660,7 @@
                 // POST /Lobbies/Play/{CardId} => Plays a card for a player into a lobby, returns a success message or error message
                 self.playCard = function (card) {
                     console.log("Playing Card " + card);
+                    playBeep();
                     fetch(`/Lobbies/Play/${card}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token() } })
                         .then(response => response.text())
                         .then(data => {
@@ -640,6 +696,7 @@
                     else
                     {
                         console.log("Judging Card :" + card + " as the winner!");
+                        playJudgeVote();
                         fetch(`/Lobbies/Judge/${card}`, { method: 'POST', headers: { 'Authorization':'Bearer ' + self.token()}})
                         .then(response => response.text())
                             .then(data => {
