@@ -1,7 +1,10 @@
 using Microsoft.Net.Http.Headers;
+using System.Text.Json;
 
 public class Lobby
 {
+    private static readonly string HighScoresFile = Path.Combine(Environment.CurrentDirectory, "highscores.json");
+    private static readonly object HighScoresLock = new();
     public static int MaxPlayers = 8;
     public static int MaxRounds = 8;
     public static int CardsDealtPerPlayer = 8;
@@ -91,8 +94,34 @@ public class Lobby
                 }
                 LobbyHistory.Add(CurrentQuestionCard, cardUrl);
 
+                // Save high score at end of game (round > 12)
+                if (RoundNumber > 12)
+                {
+                    var topPlayer = Players.OrderByDescending(p => p.Score).First();
+                    SaveHighScore(new HighScore(topPlayer.Name, topPlayer.Score, DateTime.UtcNow, Id));
+                }
+
                 return Winner.Name + " won the round! with Card <a href='/Card/" + cardUrl + " '>this card </a>, they now have " + Winner.Score + " points!";
             }
+        }
+    }
+    public static void SaveHighScore(HighScore score)
+    {
+        lock (HighScoresLock)
+        {
+            var scores = LoadHighScores();
+            scores.Add(score);
+            scores = scores.OrderByDescending(s => s.Score).Take(10).ToList();
+            File.WriteAllText(HighScoresFile, JsonSerializer.Serialize(scores));
+        }
+    }
+    public static List<HighScore> LoadHighScores()
+    {
+        lock (HighScoresLock)
+        {
+            if (!File.Exists(HighScoresFile)) return new List<HighScore>();
+            try { return JsonSerializer.Deserialize<List<HighScore>>(File.ReadAllText(HighScoresFile)) ?? new List<HighScore>(); }
+            catch { return new List<HighScore>(); }
         }
     }
 }

@@ -151,6 +151,12 @@ app.MapGet("/Card/{CardId}", (string CardId) =>
     return Results.File(Path.Combine(Environment.CurrentDirectory, "Cards-PNG", CardId + ".png"), "image/png");
 });
 
+// GET /HighScores => Returns top 10 high scores
+app.MapGet("/HighScores", () =>
+{
+    return Results.Ok(Lobby.LoadHighScores());
+});
+
 // GET /Lobbies => Returns a list of all lobbies
 app.MapGet("/Lobbies", () =>
 {

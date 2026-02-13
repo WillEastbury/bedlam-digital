@@ -3,6 +3,8 @@ api/bin/
 api/obj/
 api.tests/bin/
 api.tests/obj/
+api.playwright/bin/
+api.playwright/obj/
 
 # Temporary files
 *.log
