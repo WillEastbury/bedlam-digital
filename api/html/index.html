@@ -87,6 +87,54 @@
                 font-weight: bold;
                 border: 2px solid #0dcaf0;
             }
+
+            /* Solitaire bounce animation overlay */
+            #solitaire-canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                pointer-events: none;
+            }
+            #solitaire-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                display: none;
+                cursor: pointer;
+            }
+            #winner-banner {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10001;
+                text-align: center;
+                font-family: 'Courier New', monospace;
+                color: #0f0;
+                text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 40px #0f0;
+                pointer-events: none;
+                display: none;
+            }
+            #winner-banner h1 {
+                font-size: 4rem;
+                margin-bottom: 0.5rem;
+            }
+            #winner-banner h2 {
+                font-size: 2rem;
+                color: #ff0;
+                text-shadow: 0 0 10px #ff0, 0 0 20px #ff0;
+            }
+            #winner-banner p {
+                font-size: 1rem;
+                color: #aaa;
+                margin-top: 1rem;
+            }
         </style>
     </head>
     <body>
@@ -231,6 +279,13 @@
             </div>
         </div>
         
+        <canvas id="solitaire-canvas"></canvas>
+        <div id="solitaire-overlay" onclick="stopSolitaireAnimation()"></div>
+        <div id="winner-banner">
+            <h1>🏆 GAME OVER 🏆</h1>
+            <h2 id="winner-name"></h2>
+            <p>Click anywhere to dismiss</p>
+        </div>
         <script src="/js/bootstrap.bundle.min.js"></script>
         <script src="/js/knockout-latest.min.js"></script>
         <script>
@@ -377,7 +432,7 @@
                                 }); 
                                 // Sort descending
                                 if (!popup_endgame) {
-                                    alert("Game Over! The winner is " + sortedPlayers[0].name + " with a score of " + sortedPlayers[0].score);
+                                    startSolitaireAnimation("🎉 " + sortedPlayers[0].name + " wins with " + sortedPlayers[0].score + " points! 🎉");
                                     popup_endgame = true;
                                 }
                             }
@@ -559,6 +614,134 @@
                     document.getElementById('theme-selector').value = saved;
                 }
             })();
+
+            // Classic Solitaire-style bouncing cards animation (issue #6)
+            var solitaireAnimId = null;
+            var cardImages = [];
+            var CARD_W = 80, CARD_H = 112;
+
+            function preloadCardImages() {
+                var cardNames = [
+                    'Core-Black-1','Core-Black-2','Core-Black-3','Core-Black-4','Core-Black-5',
+                    'Core-White-1','Core-White-2','Core-White-3','Core-White-4','Core-White-5',
+                    'Core-White-6','Core-White-7','Core-White-8','Core-White-9','Core-White-10'
+                ];
+                cardNames.forEach(function(name) {
+                    var img = new Image();
+                    img.src = '/Card/' + name;
+                    cardImages.push(img);
+                });
+            }
+            preloadCardImages();
+
+            function startSolitaireAnimation(winnerText) {
+                var canvas = document.getElementById('solitaire-canvas');
+                var ctx = canvas.getContext('2d');
+                var overlay = document.getElementById('solitaire-overlay');
+                var banner = document.getElementById('winner-banner');
+                var winnerName = document.getElementById('winner-name');
+
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                overlay.style.display = 'block';
+                banner.style.display = 'block';
+                winnerName.textContent = winnerText;
+
+                var bouncingCards = [];
+                var gravity = 0.4;
+                var bounceDamping = 0.85;
+                var spawnTimer = 0;
+                var spawnInterval = 12;
+
+                function spawnCard() {
+                    var img = cardImages[Math.floor(Math.random() * cardImages.length)];
+                    var fromLeft = Math.random() > 0.5;
+                    bouncingCards.push({
+                        img: img,
+                        x: fromLeft ? -CARD_W : canvas.width,
+                        y: Math.random() * canvas.height * 0.3,
+                        vx: fromLeft ? (2 + Math.random() * 4) : -(2 + Math.random() * 4),
+                        vy: 0,
+                        rotation: 0,
+                        rotSpeed: (Math.random() - 0.5) * 0.15,
+                        trail: []
+                    });
+                }
+
+                function animate() {
+                    // Don't clear — trails persist like classic solitaire!
+                    spawnTimer++;
+                    if (spawnTimer >= spawnInterval && bouncingCards.length < 30) {
+                        spawnCard();
+                        spawnTimer = 0;
+                    }
+
+                    bouncingCards.forEach(function(card) {
+                        // Store trail position
+                        card.trail.push({ x: card.x, y: card.y, rot: card.rotation });
+                        if (card.trail.length > 6) card.trail.shift();
+
+                        // Physics
+                        card.vy += gravity;
+                        card.x += card.vx;
+                        card.y += card.vy;
+                        card.rotation += card.rotSpeed;
+
+                        // Bounce off bottom
+                        if (card.y + CARD_H > canvas.height) {
+                            card.y = canvas.height - CARD_H;
+                            card.vy = -Math.abs(card.vy) * bounceDamping;
+                            // Retro sound-like visual flash
+                            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        }
+
+                        // Bounce off sides
+                        if (card.x < -CARD_W * 2 || card.x > canvas.width + CARD_W * 2) {
+                            card.vx = -card.vx;
+                        }
+
+                        // Draw trail (faded copies)
+                        card.trail.forEach(function(t, i) {
+                            ctx.save();
+                            ctx.globalAlpha = 0.15 + (i * 0.08);
+                            ctx.translate(t.x + CARD_W / 2, t.y + CARD_H / 2);
+                            ctx.rotate(t.rot);
+                            ctx.drawImage(card.img, -CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
+                            ctx.restore();
+                        });
+
+                        // Draw main card
+                        ctx.save();
+                        ctx.globalAlpha = 1.0;
+                        ctx.translate(card.x + CARD_W / 2, card.y + CARD_H / 2);
+                        ctx.rotate(card.rotation);
+                        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        ctx.shadowBlur = 8;
+                        ctx.shadowOffsetX = 3;
+                        ctx.shadowOffsetY = 3;
+                        ctx.drawImage(card.img, -CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
+                        ctx.restore();
+                    });
+
+                    solitaireAnimId = requestAnimationFrame(animate);
+                }
+
+                // Slight delay for dramatic effect
+                setTimeout(function() { animate(); }, 500);
+            }
+
+            function stopSolitaireAnimation() {
+                if (solitaireAnimId) {
+                    cancelAnimationFrame(solitaireAnimId);
+                    solitaireAnimId = null;
+                }
+                var canvas = document.getElementById('solitaire-canvas');
+                var ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('solitaire-overlay').style.display = 'none';
+                document.getElementById('winner-banner').style.display = 'none';
+            }
         </script>
     </body>
 </html>
