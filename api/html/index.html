@@ -266,9 +266,17 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <button class="btn btn-success mt-3" data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1) && !isLocked(), click: $root.joinLobby">
-                                            🚀 Join Lobby
-                                        </button>
+                                        <div data-bind="visible: (! players().some(player => player.name == $root.userName())) && players().length < 8 && (roundNumber() <= 1) && !isLocked()" class="mt-2">
+                                            <small class="text-muted">Card Packs:</small><br>
+                                            <label class="form-check-label me-2"><input type="checkbox" class="form-check-input pack-check" value="Core" checked> Core</label>
+                                            <label class="form-check-label me-2"><input type="checkbox" class="form-check-input pack-check" value="MSFT-SP1" checked> MSFT-SP1</label>
+                                            <label class="form-check-label me-2"><input type="checkbox" class="form-check-input pack-check" value="MSFT-SP2" checked> MSFT-SP2</label>
+                                            <label class="form-check-label me-2"><input type="checkbox" class="form-check-input pack-check" value="Update1" checked> Update1</label>
+                                            <br>
+                                            <button class="btn btn-success mt-2" data-bind="click: $root.joinLobby">
+                                                🚀 Join Lobby
+                                            </button>
+                                        </div>
                                         <button class="btn btn-outline-info btn-sm mt-2" data-bind="visible: roundNumber() > 1, click: function() { $root.spectate(id()); }">
                                             👁 Watch
                                         </button>
@@ -698,10 +706,17 @@
                 };
 
                 // GET /Login/{LobbyId} => Joins a user to the game, returns a JWT for the user to send on subsequent requests
-                self.joinLobby = function (lobby) {
+                self.joinLobby = function (lobby, event) {
                     self.userName(prompt("Please enter your name", ""));
                     playJoinChime();
-                    fetch(`/Login/${lobby.id()}/${self.userName()}`,
+                    // Collect selected card packs from checkboxes near the clicked button
+                    var packs = [];
+                    var card = event.target.closest('.card-body') || event.target.closest('.card');
+                    if (card) {
+                        card.querySelectorAll('.pack-check:checked').forEach(function(cb) { packs.push(cb.value); });
+                    }
+                    var packsParam = packs.length > 0 ? '?packs=' + packs.join(',') : '';
+                    fetch(`/Login/${lobby.id()}/${self.userName()}` + packsParam,
                         { method: 'GET' })
                         .then(response => response.text())
                         .then(data => {

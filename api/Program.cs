@@ -192,9 +192,13 @@ app.MapGet("/Lobbies", () =>
 });
 
 // GET /Login/{LobbyId}{PlayerName} => Creates a new player, joins a lobby (if one does not exist with the correct number of players one is created) and returns a JWT token
-app.MapGet("/Login/{lobbyId}/{playerName}", (string playerName, string lobbyId) =>
+app.MapGet("/Login/{lobbyId}/{playerName}", (string playerName, string lobbyId, HttpContext context) =>
 {
     Console.Write("U");
+    var packsParam = context.Request.Query["packs"].ToString();
+    List<string> selectedPacks = null;
+    if (!string.IsNullOrEmpty(packsParam))
+        selectedPacks = packsParam.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
     
     lock (playersLock)
     {
@@ -206,7 +210,7 @@ app.MapGet("/Login/{lobbyId}/{playerName}", (string playerName, string lobbyId) 
         
         lock (lobbiesLock)
         {
-            Lobby lobby = CheckAndGetLobby(lobbyId);
+            Lobby lobby = CheckAndGetLobby(lobbyId, selectedPacks);
             
             // Deal cards atomically within the lobby lock
             lock (lobby.DeckLock)
@@ -475,7 +479,7 @@ void CreateAndAddNewLobbiesIfNoSpace()
         Console.WriteLine("Created new lobby: " + lobby.Id);
     }
 }
-Lobby CheckAndGetLobby(string lobbyId)
+Lobby CheckAndGetLobby(string lobbyId, List<string> cardPacks = null)
 {
     // Must be called within lobbiesLock
     // Join the player to their requested lobby if it's not started or full

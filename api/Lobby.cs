@@ -22,19 +22,21 @@ public class Lobby
     public int JudgeIndex { get; set;}
     public string CurrentQuestionCard => QuestionDeck[RoundNumber];
     public bool IsLocked { get; set; } = false;
+    public List<string> CardPacks { get; private set; } = new List<string> { "Core", "MSFT-SP1", "MSFT-SP2", "Update1" };
     public object DeckLock { get; } = new object();
     public object PlayersLock { get; } = new object();
     public object StateLock { get; } = new object();
-    public Lobby(string id)
+    public Lobby(string id, List<string> cardPacks = null)
     {
         Id = id;
+        if (cardPacks != null && cardPacks.Count > 0) CardPacks = cardPacks;
         QuestionDeck = ShuffleCards(GetQuestionCards());
         AnswerDeck = ShuffleCards(GetAnswerCards());
         JudgeIndex = 0;
 
      }
-    List<string> GetQuestionCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*Black*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).ToList();
-    List<string> GetAnswerCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*White*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).ToList();
+    List<string> GetQuestionCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*Black*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).Where(c => CardPacks.Any(p => c.StartsWith(p + "-"))).ToList();
+    List<string> GetAnswerCards() => new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Cards-PNG")).GetFiles("*White*", new EnumerationOptions() {RecurseSubdirectories = true}).Select(e => e.Name.Replace(".png","")).Where(c => CardPacks.Any(p => c.StartsWith(p + "-"))).ToList();
     List<string> ShuffleCards(List<string> cards) => cards.OrderBy(_ => Guid.NewGuid()).ToList();
     public void AddPlayer(Player player) 
     {
