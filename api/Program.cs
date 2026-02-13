@@ -331,6 +331,29 @@ app.MapPost("/Lobbies/Judge/{cardUrl}", (HttpContext context, string cardUrl) =>
     }
 });
 
+// POST /Chat => Add a chat message to the player's lobby
+app.MapPost("/Chat", (HttpContext context, ChatMessage msg) =>
+{
+    if (!SetAuth(context)) return Results.BadRequest("Not authed");
+    string lobbyId = context.User.Claims.FirstOrDefault(e => e.Type == "LobbyId")?.Value;
+    string playerName = context.User.Claims.FirstOrDefault(e => e.Type == "PlayerName")?.Value;
+    var lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId);
+    if (lobby == null) return Results.NotFound("Lobby not found");
+    var chat = new ChatMessage { Sender = playerName ?? "?", Message = msg.Message, Timestamp = DateTime.UtcNow };
+    lock (lobby.PlayersLock) { lobby.ChatMessages.Add(chat); if (lobby.ChatMessages.Count > 50) lobby.ChatMessages.RemoveAt(0); }
+    return Results.Ok(chat);
+});
+
+// GET /Chat => Get recent chat messages from the player's lobby
+app.MapGet("/Chat", (HttpContext context) =>
+{
+    if (!SetAuth(context)) return Results.BadRequest("Not authed");
+    string lobbyId = context.User.Claims.FirstOrDefault(e => e.Type == "LobbyId")?.Value;
+    var lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId);
+    if (lobby == null) return Results.NotFound("Lobby not found");
+    lock (lobby.PlayersLock) { return Results.Ok(lobby.ChatMessages.TakeLast(20).ToList()); }
+});
+
 app.Run();
 
 string GetRandomName() {

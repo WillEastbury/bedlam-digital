@@ -350,6 +350,28 @@
                             <img class="img-fluid grid-image" data-bind=" attr: {src: '/Card/' + $data}" />
                         </div>
                     </div>
+                    <!-- Chat Box -->
+                    <div class="card mt-3" data-bind="visible: myLobbyData().id() !== null">
+                        <div class="card-header bg-secondary text-light">💬 Chat</div>
+                        <div class="card-body" style="max-height: 200px; overflow-y: auto;" id="chat-messages">
+                            <div data-bind="foreach: chatMessages">
+                                <div class="mb-1"><strong data-bind="text: sender"></strong>: <span data-bind="text: message"></span> <small class="text-muted" data-bind="text: new Date(timestamp).toLocaleTimeString()"></small></div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')lvm.sendChat()">
+                                <button class="btn btn-sm btn-primary" onclick="lvm.sendChat()">Send</button>
+                            </div>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-outline-light" onclick="lvm.sendEmoji('😂')">😂</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="lvm.sendEmoji('🔥')">🔥</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="lvm.sendEmoji('👏')">👏</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="lvm.sendEmoji('💀')">💀</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="lvm.sendEmoji('🎉')">🎉</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                
                 <!-- Diags Panel (hidden by default, toggled via gear icon) -->
@@ -498,6 +520,7 @@
                 self.answerCards = ko.observableArray([]);
                 self.playedCards = ko.observableArray([]);
                 self.highScores = ko.observableArray([]);
+                self.chatMessages = ko.observableArray([]);
 
                 self.RoundPlayedIndex = ko.computed(function(){
                     return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != ''))
@@ -706,6 +729,30 @@
                         SaveViewModelLocal();
                     }
                 };
+
+                self.sendChat = function () {
+                    var input = document.getElementById('chat-input');
+                    var msg = input.value.trim();
+                    if (!msg || !self.token()) return;
+                    fetch('/Chat', { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token(), 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) })
+                        .then(function() { input.value = ''; self.loadChat(); })
+                        .catch(error => console.error('Chat error:', error));
+                };
+
+                self.sendEmoji = function (emoji) {
+                    if (!self.token()) return;
+                    fetch('/Chat', { method: 'POST', headers: { 'Authorization': 'Bearer ' + self.token(), 'Content-Type': 'application/json' }, body: JSON.stringify({ message: emoji }) })
+                        .then(function() { self.loadChat(); })
+                        .catch(error => console.error('Chat error:', error));
+                };
+
+                self.loadChat = function () {
+                    if (!self.token()) return;
+                    fetch('/Chat', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
+                        .then(response => response.json())
+                        .then(data => { self.chatMessages(data); })
+                        .catch(error => console.error('Chat load error:', error));
+                };
             };
             ko.applyBindings(lvm);
             
@@ -750,6 +797,7 @@
                     lvm.loadLobby(lvm.token());
                     lvm.getCards();
                     lvm.getPlayedCards();
+                    lvm.loadChat();
                 }
                 updatePlayBedlamTabState();
             }, 1000);
