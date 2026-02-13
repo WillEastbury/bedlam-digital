@@ -238,30 +238,36 @@
             function ReloadOnCrash() {
                 // Load the viewmodel state from local storage
                 if (localStorage.getItem("lvm") != null) {
-                    setTimeout(function () {
+                    try {
                         console.log("Reloading State");
                         var lvmObj = JSON.parse(atob(localStorage.getItem("lvm")));
+                        if (!lvmObj || !lvmObj.token) return;
                         lvm.userName(lvmObj.userName);
                         lvm.token(lvmObj.token);
-                        // Map the props of my lobby data
-                        lvm.myLobbyData = ko.observable(new Lobby(
-                            lvmObj.myLobbyData.id, 
-                            lvmObj.myLobbyData.Players, 
-                            lvmObj.myLobbyData.playedCards, 
-                            lvmObj.myLobbyData.roundNumber,
-                            lvmObj.myLobbyData.judgeIndex
-                        ));
-                        lvm.questionCard(lvmObj.questionCard);
+                        // Update existing observable rather than replacing it (preserves KO bindings)
+                        var ld = lvmObj.myLobbyData;
+                        if (ld) {
+                            lvm.myLobbyData().id(ld.id);
+                            lvm.myLobbyData().players(ld.players || []);
+                            lvm.myLobbyData().playedCards(ld.playedCards || []);
+                            lvm.myLobbyData().roundNumber(ld.roundNumber || 0);
+                            lvm.myLobbyData().judgeIndex(ld.judgeIndex || 0);
+                            lvm.myLobbyData().lobbyHistory(ld.lobbyHistory || []);
+                        }
+                        lvm.questionCard(lvmObj.questionCard || "");
                         lvm.answerCards([]);
-                        lvmObj.answerCards.forEach(function (card) {
+                        (lvmObj.answerCards || []).forEach(function (card) {
                             lvm.answerCards.push(card);
                         });
                         lvm.lobbies([]);
-                        lvmObj.lobbies.forEach(function (lobby) {
-                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex));
+                        (lvmObj.lobbies || []).forEach(function (lobby) {
+                            lvm.lobbies.push(Lobby(lobby.id, lobby.players, lobby.playedCards, lobby.roundNumber, lobby.judgeIndex, lobby.lobbyHistory));
                         });
-                        console.log("Loading Complete:", lvmObj);
-                    }, 2000);
+                        console.log("Auto-rejoin complete:", lvmObj);
+                    } catch (e) {
+                        console.error("Auto-rejoin failed, clearing saved state:", e);
+                        localStorage.removeItem("lvm");
+                    }
                 }
             }
             // Declare a lobby with constructor to hold the lobby information
@@ -490,6 +496,9 @@
             };
             ko.applyBindings(lvm);
             
+            // Auto-rejoin on page load if saved state exists
+            ReloadOnCrash();
+
             // Add visual prominence to Play Bedlam tab if user is in a lobby
             function updatePlayBedlamTabState() {
                 const playTab = document.getElementById('play-bedlam-tab');
