@@ -381,6 +381,17 @@ app.MapGet("/Chat", (HttpContext context) =>
     lock (lobby.PlayersLock) { return Results.Ok(lobby.ChatMessages.TakeLast(20).ToList()); }
 });
 
+// GET /RoundTimer => Returns seconds remaining in the current round
+app.MapGet("/RoundTimer", (HttpContext context) =>
+{
+    if (!SetAuth(context)) return Results.BadRequest("Not authed");
+    string lobbyId = context.User.Claims.FirstOrDefault(e => e.Type == "LobbyId")?.Value;
+    var lobby = lobbies.FirstOrDefault(l => l.Id == lobbyId);
+    if (lobby == null) return Results.NotFound("Lobby not found");
+    lobby.AutoPlayForTimeout();
+    return Results.Ok(new { secondsRemaining = lobby.GetRoundSecondsRemaining() });
+});
+
 app.Run();
 
 string GetRandomName() {

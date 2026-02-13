@@ -328,7 +328,9 @@
                         </div>
                     </div>
                     <div class="row" id="gameplay" data-bind="visible: (!$root.iHavePlayedThisRound() && !$root.amITheJudge())">
-                        <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span></h3>
+                        <h3>Playing card for round &nbsp<span data-bind="text: myLobbyData().roundNumber()"></span>
+                            <span class="badge ms-2" data-bind="text: '⏱ ' + roundTimer() + 's', css: { 'bg-danger': roundTimer() <= 10, 'bg-warning text-dark': roundTimer() > 10 && roundTimer() <= 30, 'bg-info': roundTimer() > 30 }"></span>
+                        </h3>
                         <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
                             <img class="img-fluid" data-bind="attr: {src: '/Card/' + $root.questionCard()}" />
                         </div>
@@ -607,6 +609,7 @@
                 self.chatMessages = ko.observableArray([]);
                 self.gameHistory = ko.observableArray([]);
                 self.spectatorData = ko.observable(null);
+                self.roundTimer = ko.observable(60);
 
                 self.RoundPlayedIndex = ko.computed(function(){
                     return self.myLobbyData().players().findIndex(player => player.name === self.userName() && (player.lastPlayedCard != null && player.lastPlayedCard != ''))
@@ -860,6 +863,14 @@
                         .then(data => { self.spectatorData(data); })
                         .catch(error => console.error('Spectate error:', error));
                 };
+
+                self.loadRoundTimer = function () {
+                    if (!self.token()) return;
+                    fetch('/RoundTimer', { method: 'GET', headers: { 'Authorization': 'Bearer ' + self.token() } })
+                        .then(response => response.json())
+                        .then(data => { self.roundTimer(data.secondsRemaining); })
+                        .catch(error => console.error('Timer error:', error));
+                };
             };
             ko.applyBindings(lvm);
             
@@ -907,6 +918,7 @@
                     lvm.getCards();
                     lvm.getPlayedCards();
                     lvm.loadChat();
+                    lvm.loadRoundTimer();
                 }
                 updatePlayBedlamTabState();
             }, 1000);

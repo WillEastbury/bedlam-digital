@@ -17,6 +17,7 @@ public class Lobby
     public List<string> PlayedCards { get; private set;} = new List<string>();
     public List<ChatMessage> ChatMessages { get; private set;} = new List<ChatMessage>();
     public int SpectatorCount { get; set; } = 0;
+    public DateTime RoundStartTime { get; set; } = DateTime.UtcNow;
     public Dictionary<string,string> LobbyHistory {get;set;} = new();
     public int RoundNumber {get; set;} = 1;
     public int JudgeIndex { get; set;}
@@ -71,6 +72,31 @@ public class Lobby
             return true;
         }
     }
+    public void AutoPlayForTimeout()
+    {
+        lock (PlayersLock)
+        {
+            if ((DateTime.UtcNow - RoundStartTime).TotalSeconds < 60) return;
+            var rng = new Random();
+            for (int i = 0; i < Players.Count; i++)
+            {
+                if (i == JudgeIndex) continue;
+                var player = Players[i];
+                if (!string.IsNullOrEmpty(player.LastPlayedCard)) continue;
+                if (player.Cards.Count == 0) continue;
+                var card = player.Cards[rng.Next(player.Cards.Count)];
+                player.Cards.Remove(card);
+                PlayedCards.Add(card);
+                if (!IsLocked) IsLocked = true;
+                player.LastPlayedCard = card;
+            }
+        }
+    }
+    public int GetRoundSecondsRemaining()
+    {
+        var elapsed = (int)(DateTime.UtcNow - RoundStartTime).TotalSeconds;
+        return Math.Max(0, 60 - elapsed);
+    }
     public string JudgeVoteOnCard(string cardUrl)
     {
         lock (StateLock)
@@ -87,6 +113,7 @@ public class Lobby
                 if (Winner == null) throw new Exception("ERR: No Player Specified");
                 Winner.WonRound();
                 RoundNumber++;
+                RoundStartTime = DateTime.UtcNow;
                 PlayedCards.Clear();
                 // Reset all of the players for this lobby's last played cards
                 foreach (var player in Players.ToList())
