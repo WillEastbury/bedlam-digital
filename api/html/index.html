@@ -609,6 +609,7 @@
                 self.questionCard = ko.observable("");
                 self.answerCards = ko.observableArray([]);
                 self.playedCards = ko.observableArray([]);
+                self.previousRoundNumber = 0; // Track previous round for game start detection (0 = no previous round, games start at round 1)
                 self.highScores = ko.observableArray([]);
                 self.chatMessages = ko.observableArray([]);
                 self.gameHistory = ko.observableArray([]);
@@ -694,6 +695,31 @@
                                 self.myLobbyData().lobbyHistory.push(cardH);
                             });
 
+                            // Detect game start or joining mid-game: switch to Play Bedlam tab if game is active
+                            // Trigger on: round 1→2+ transition (game start) OR first poll when round is already 2+ (join mid-game)
+                            if ((self.previousRoundNumber === 0 || self.previousRoundNumber === 1) && data.roundNumber > 1) {
+                                const playTab = document.getElementById('play-bedlam-tab');
+                                const playBadge = document.getElementById('play-bedlam-badge');
+                                
+                                if (!playTab) {
+                                    console.warn('Play Bedlam tab element not found - cannot auto-switch');
+                                } else if (!playTab.classList.contains('active')) {
+                                    // Only switch if not already on the Play Bedlam tab
+                                    // Activate the Play Bedlam tab using Bootstrap Tab API
+                                    const tab = new bootstrap.Tab(playTab);
+                                    tab.show();
+                                    // Add pulsing animation class
+                                    playTab.classList.add('play-bedlam-active');
+                                    // Show badge
+                                    if (playBadge) {
+                                        playBadge.style.display = 'inline';
+                                    }
+                                }
+                            }
+
+                            // Update previous round number for next poll
+                            self.previousRoundNumber = data.roundNumber;
+
                             // If this is the 10th round then the game is over and WE NEED TO popup a message
                             if (data.roundNumber > 12) {
                                 // Who has the highest score? 
@@ -739,6 +765,7 @@
                         .then(response => response.text())
                         .then(data => {
                             self.token(data.replace("\"", "").replace("\"", ""));
+                            self.previousRoundNumber = 0; // Reset for new lobby
                             self.loadLobby(data.replace("\"", "").replace("\"", ""));
                             
                             // Switch to Play Bedlam tab and make it prominent
